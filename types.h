@@ -62,9 +62,7 @@ struct Position
 };
 
 #define POSITIONS_IN_LINE(line) Position(0, line), Position(1, line), Position(2, line), Position(3, line), Position(4, line), Position(5, line), Position(6, line), Position(7, line)
-const Position board_positions[] = {
-    POSITIONS_IN_LINE(0), POSITIONS_IN_LINE(1), POSITIONS_IN_LINE(2), POSITIONS_IN_LINE(3),
-    POSITIONS_IN_LINE(4), POSITIONS_IN_LINE(5), POSITIONS_IN_LINE(6), POSITIONS_IN_LINE(7)};
+const Position board_positions[] = {POSITIONS_IN_LINE(0), POSITIONS_IN_LINE(1), POSITIONS_IN_LINE(2), POSITIONS_IN_LINE(3), POSITIONS_IN_LINE(4), POSITIONS_IN_LINE(5), POSITIONS_IN_LINE(6), POSITIONS_IN_LINE(7)};
 #undef POSITIONS_IN_LINE
 
 class Board
@@ -95,7 +93,8 @@ public:
     i8 height;
 
 public:
-    Brick(u64 positions) : Board(positions), width(rightmost_position() + 1), height(hightest_position() + 1) {
+    Brick(u64 positions) : Board(positions), width(rightmost_position() + 1), height(hightest_position() + 1)
+    {
         assert(valid());
     }
 
