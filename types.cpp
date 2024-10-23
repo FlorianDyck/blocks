@@ -1,35 +1,27 @@
+#include<string.h>
 #include "types.h"
 
 bool Board::position(i8 x, i8 y)
 {
-    return (positions >> (x + y * BOARD_WIDTH)) & 0x1;
+    return (positions >> (x.value + y.value * BOARD_WIDTH.value)) & 0x1;
 }
 
 std::ostream &print_range(u64 positions, std::ostream &os, i8 bound_x, i8 bound_y)
 {
-    os << std::endl
-       << "|";
-    for (i8 x = 0; x < BOARD_WIDTH; x++)
-        os << "-";
-    os << "|";
+    os << "\n|" << std::string(bound_x.value, '=') << "|\n|";
 
-    for (i8 y = 0; y < BOARD_HEIGHT; y++)
+    for (i8 y = 0; y < bound_y; y++)
     {
-        os << std::endl
-           << "|";
-        for (i8 x = 0; x < BOARD_WIDTH; x++)
+        for (i8 x = 0; x < bound_x; x++)
         {
             os << (positions & 0x1 ? "X" : ".");
             positions >>= 1;
         }
-        os << "|";
+        os << "|\n|";
+        positions >>= BOARD_WIDTH.value - bound_x.value;
     }
 
-    os << std::endl
-       << "|";
-    for (i8 x = 0; x < BOARD_WIDTH; x++)
-        os << "-";
-    os << "|";
+    os << std::string(bound_x.value, '=') << "|";
 
     return os;
 }
@@ -43,12 +35,11 @@ i8 Board::rightmost_position() const
 {
     for (i8 i = BOARD_WIDTH - 1; i >= 0; i--)
     {
-        if ((column << i) & positions)
+        if ((column << Position(i, 0)) & positions)
         {
             return i;
         }
     }
-    std::cout << "rightmost: -1" << std::endl;
     return -1;
 }
 
@@ -56,12 +47,11 @@ i8 Board::hightest_position() const
 {
     for (i8 i = BOARD_HEIGHT - 1; i >= 0; i--)
     {
-        if ((row << (i * BOARD_WIDTH)) & positions)
+        if ((line << Position(0, i)) & positions)
         {
             return i;
         }
     }
-    std::cout << "highest: -1" << std::endl;
     return -1;
 }
 
