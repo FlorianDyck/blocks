@@ -33,9 +33,9 @@ std::ostream &Board::print(std::ostream &os) const
 
 i8 Board::rightmost_position() const
 {
-    for (i8 i = BOARD_WIDTH - 1; i >= 0; i--)
+    for (i8 i : COLUMN_NUMBERS_REVERSED)
     {
-        if ((column << Position(i, 0)) & positions)
+        if ((COLUMN << Position(i, 0)) & positions)
         {
             return i;
         }
@@ -45,9 +45,9 @@ i8 Board::rightmost_position() const
 
 i8 Board::hightest_position() const
 {
-    for (i8 i = BOARD_HEIGHT - 1; i >= 0; i--)
+    for (i8 i : LINE_NUMBERS_REVERSED)
     {
-        if ((line << Position(0, i)) & positions)
+        if ((LINE << Position(0, i)) & positions)
         {
             return i;
         }
