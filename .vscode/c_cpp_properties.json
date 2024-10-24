@@ -1,20 +1,16 @@
 {
     "configurations": [
         {
-            "name": "WSL",
+            "name": "Linux",
             "includePath": [
-                "/usr/include/c++/13",
-                "/usr/include/x86_64-linux-gnu/c++/13",
-                "/usr/include/c++/13/backward",
-                "/usr/lib/gcc/x86_64-linux-gnu/13/include",
-                "/usr/local/include",
-                "/usr/include/x86_64-linux-gnu",
-                "/usr/include"
+                "${workspaceFolder}/**"
             ],
-            "intelliSenseMode": "${default}",
-            "compilerPath": "/usr/bin/g++",
-            "cStandard": "c23",
-            "cppStandard": "gnu++23"
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4
