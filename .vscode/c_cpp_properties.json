@@ -11,10 +11,10 @@
                 "/usr/include/x86_64-linux-gnu",
                 "/usr/include"
             ],
-            "intelliSenseMode": "linux-gcc-x64",
-            "compilerPath": "/usr/bin/gcc",
-            "cStandard": "c17",
-            "cppStandard": "gnu++17"
+            "intelliSenseMode": "${default}",
+            "compilerPath": "/usr/bin/g++",
+            "cStandard": "c23",
+            "cppStandard": "gnu++23"
         }
     ],
     "version": 4
