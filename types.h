@@ -1,6 +1,9 @@
+#pragma once
+
 #include <inttypes.h>
 #include <iostream>
 #include <cassert>
+#include <vector>
 
 using u64 = uint_fast64_t;
 struct i8
@@ -63,10 +66,14 @@ struct Position
         return 0 <= x && x < BOARD_WIDTH && 0 <= y && y < BOARD_HEIGHT;
     }
 
+    int index() const {
+        return x.value + y.value * BOARD_WIDTH.value;
+    }
+
     friend const u64 operator<<(const u64 blocks, const Position position)
     {
         assert(position.valid());
-        return blocks << (position.x.value + position.y.value * BOARD_WIDTH.value);
+        return blocks << (position.index());
     }
 
     friend std::ostream &operator<<(std::ostream &os, Position position)
@@ -79,13 +86,29 @@ struct Position
 const Position board_positions[] = {POSITIONS_IN_LINE(0), POSITIONS_IN_LINE(1), POSITIONS_IN_LINE(2), POSITIONS_IN_LINE(3), POSITIONS_IN_LINE(4), POSITIONS_IN_LINE(5), POSITIONS_IN_LINE(6), POSITIONS_IN_LINE(7)};
 #undef POSITIONS_IN_LINE
 
+static int NumberOfSetBits(u64 i)
+{
+    i = i - ((i >> 1) & 0x5555555555555555UL);
+    i = (i & 0x3333333333333333UL) + ((i >> 2) & 0x3333333333333333UL);
+    return (int)((((i + (i >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >> 56);
+}
+
+struct Grades {
+    int free[5] = { 0, 0, 0, 0, 0 };
+    int used[5] = { 0, 0, 0, 0, 0 };
+};
+
 class Board
 {
 protected:
     u64 positions;
 
 public:
+    Board() : positions(0) {}
     Board(u64 positions) : positions(positions) {}
+    bool operator==(const Board other) const {
+        return positions == other.positions;
+    }
 
     bool position(i8 x, i8 y);
 
@@ -100,7 +123,72 @@ public:
 
     Board combine(Board other) {
         assert(this->can_combine(other));
-        return Board(positions | other.positions);
+        u64 combination = positions | other.positions;
+        
+        std::vector<i8> lines;
+        for (i8 line: LINE_NUMBERS) {
+            if ((combination & (LINE << Position(0, line))) == (LINE << Position(0, line))) {
+                lines.push_back(line);
+            }
+        }
+        
+        std::vector<i8> columns;
+        for (i8 column: COLUMN_NUMBERS) {
+            if ((combination & (COLUMN << Position(column, 0))) == (COLUMN << Position(column, 0))) {
+                columns.push_back(column);
+            }
+        }
+
+        for(i8 line: lines) {
+            combination &= ~(LINE << Position(0, line));
+        }
+        for(i8 column: columns) {
+            combination &= ~(COLUMN << Position(column, 0));
+        }
+
+        return Board(combination);
+    }
+
+    int set_positions() {
+        return NumberOfSetBits(positions);
+    }
+
+    int free_positions() {
+        return BOARD_HEIGHT.value * BOARD_WIDTH.value - set_positions();
+    }
+
+    int differentBlocksAround(Position position) {
+        int index = position.index();
+        bool isSet = positions & (1ul << index);
+        auto isDifferent = [this, index, position, isSet](int offset) { return isSet != (bool) (positions & (1ul << (index + offset))); };
+        int result = 0;
+        if ((index >= BOARD_WIDTH.value) ? isDifferent(-BOARD_WIDTH.value) : !isSet ) result++;
+        if (((index % BOARD_WIDTH.value) != 0) ? isDifferent(-1) : !isSet ) result++;
+        if (((index % BOARD_WIDTH.value) != (BOARD_WIDTH.value - 1)) ? isDifferent(1) : !isSet ) result++;
+        if ((index < (BOARD_HEIGHT.value * BOARD_WIDTH.value - BOARD_WIDTH.value)) ? isDifferent(BOARD_WIDTH.value) : !isSet ) result++;
+        return result;
+    }
+
+    Grades grades() {
+        Grades result;
+        for (i8 y: LINE_NUMBERS) {
+            for (i8 x: COLUMN_NUMBERS) {
+                Position position(x, y);
+                if (positions & (1ul << position)) {
+                    result.used[differentBlocksAround(position)]++;
+                } else {
+                    result.free[differentBlocksAround(position)]++;
+                }
+            }
+        }
+        return result;
+    }
+
+    void print_eval_stats() {
+        int freeBlocks = free_positions();
+        Grades g = grades();
+        int borderLength = g.free[1] + 2 * g.free[2] + 3 * g.free[3] + 4 * g.free[4];
+        std::cout << freeBlocks << " free positions, border length " << borderLength;
     }
 
     friend std::ostream &operator<<(std::ostream &os, Board const &m)
@@ -124,6 +212,10 @@ public:
     bool valid()
     {
         return (positions & LINE) && (positions & (LINE << Position(0, height.value - 1))) && (positions & COLUMN) && (positions & (COLUMN << Position(width.value - 1, 0)));
+    }
+
+    Board operator<<(Position pos) {
+        return positions << pos;
     }
 
     std::ostream &print3(std::ostream &os) const;

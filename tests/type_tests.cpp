@@ -63,3 +63,28 @@ TEST(TypeTests, RandPropertyBrickSize)
   expectBrickDimensions(brick, x + 1, y + 1);
 }
 
+TEST(CombinationTests, CombinePredefined) {
+  EXPECT_EQ(Board(0b00001111).combine(Board(0b11110000)), Board());
+  // std::cout << Board(0xF0F0'F0F0'0F0F'0F0F) << "\n+" << Board(0x0F0F'0F0F'F0F0'F0F0) << "\n=" << Board();
+  EXPECT_EQ(Board(0xF0F0'F0F0'0F0F'0F0F).combine(Board(0x0F0F'0F0F'F0F0'F0F0)), Board());
+  // std::cout << Board(0xF0F0'F0F0'0000'0000) << "\n+" << Board(0x0F0F'0F0F'F0F0'F0F0) << "\n=" << Board();
+  EXPECT_EQ(Board(0xF0F0'F0F0'0000'0000).combine(Board(0x0F0F'0F0F'F0F0'F0F0)), Board());
+  // std::cout << Board(0xF0F0'F0F0'0804'0201) << "\n+" << Board(0x0F0F'0F0F'F0F0'F0F0) << "\n=" << Board(0x0804'0201);
+  EXPECT_EQ(Board(0xF0F0'F0F0'0804'0201).combine(Board(0x0F0F'0F0F'F0F0'F0F0)), Board(0x0804'0201));
+  EXPECT_DEATH(Board(1).combine(Board(1)), "");
+}
+
+TEST(BasicTests, BitCountTest) {
+  EXPECT_EQ(NumberOfSetBits(0x0), 0);
+  EXPECT_EQ(NumberOfSetBits(0xFFFF'FFFF), 4*8);
+  EXPECT_EQ(NumberOfSetBits(0x0F0F'0F0F'0F0F'0F0F), 4*8);
+  EXPECT_EQ(NumberOfSetBits(0x5555'5555'5555'5555), 4*8);
+  EXPECT_EQ(NumberOfSetBits(0xFFFF'FFFF'FFFF'FFFF), 8*8);
+}
+
+TEST(TypeTests, FreeTest) {
+  EXPECT_EQ(Board(0x00).free_positions(), 64);
+  EXPECT_EQ(Board(0x0F).free_positions(), 60);
+  EXPECT_EQ(Board(0xFF).free_positions(), 56);
+  EXPECT_EQ(Board(0xFFFF'FFFF'FFFF'FFFF).free_positions(), 0);
+}
