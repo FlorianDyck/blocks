@@ -121,7 +121,7 @@ public:
         return !(positions & other.positions);
     }
 
-    Board combine(Board other) {
+    std::pair<Board, size_t> combine(Board other) {
         assert(this->can_combine(other));
         u64 combination = positions | other.positions;
         
@@ -146,7 +146,7 @@ public:
             combination &= ~(COLUMN << Position(column, 0));
         }
 
-        return Board(combination);
+        return std::pair(Board(combination), lines.size() + columns.size());
     }
 
     int set_positions() {
@@ -212,6 +212,40 @@ public:
     bool valid()
     {
         return (positions & LINE) && (positions & (LINE << Position(0, height.value - 1))) && (positions & COLUMN) && (positions & (COLUMN << Position(width.value - 1, 0)));
+    }
+    
+    bool operator==(const Brick other) const {
+        return positions == other.positions;
+    }
+
+    Brick flip_vertically() {
+        u64 flipped_positions = 0;
+        for (i8 line = 0; line < height; line++) {
+            int index = Position(0, height.value - line.value - 1).index();
+            flipped_positions |= ((positions >> index) & LINE) << Position(0, line);
+        }
+        return Brick(flipped_positions);
+    }
+
+    Brick flip_horizontally() {
+        u64 flipped_positions = 0;
+        for (i8 column = 0; column < width; column++) {
+            int index = Position(width.value - column.value - 1, 0).index();
+            flipped_positions |= ((positions >> index) & COLUMN) << Position(column, 0);
+        }
+        return Brick(flipped_positions);
+    }
+
+    Brick rotate() {
+        u64 rotated_positions = 0;
+        for (i8 y = 0; y < height; y++) {
+            for (i8 x = 0; x < width; x++) {
+                if (position(x, y)) {
+                    rotated_positions |= 1 << Position(height.value - 1 - y.value, x);
+                }
+            }
+        }
+        return Brick(rotated_positions);
     }
 
     Board operator<<(Position pos) {

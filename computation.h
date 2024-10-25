@@ -9,6 +9,7 @@ struct Move {
     i8 x;
     i8 y;
     Board result;
+    size_t cleared;
 };
 using moves_t = std::vector<Move>;
 
@@ -37,8 +38,8 @@ void computeBest(
                 if (!current.can_combine(shifted_brick)) {
                     continue;
                 }
-                Board new_board = current.combine(shifted_brick);
-                current_moves.push_back({current_brick, x, y, new_board});
+                auto[new_board, cleared] = current.combine(shifted_brick);
+                current_moves.push_back({current_brick, x, y, new_board, cleared});
 
                 if (now_remaining.empty()) {
                     float new_score = evaluation(new_board);
@@ -46,9 +47,9 @@ void computeBest(
                         // for (Move move: current_moves) {
                         //     std::cout << "\n+" << (move.brick << Position(move.x, move.y)) << "\n=" << move.result;
                         // }
-                        std::cout << new_board << "\n";
-                        new_board.print_eval_stats();
-                        std::cout << "\nevaluation = " << new_score << std::endl;
+                        // std::cout << new_board << "\n";
+                        // new_board.print_eval_stats();
+                        // std::cout << "\nevaluation = " << new_score << std::endl;
                         best_evaluation = new_score;
                         best_moves = current_moves;
                     }

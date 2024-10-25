@@ -63,6 +63,22 @@ TEST(TypeTests, RandPropertyBrickSize)
   expectBrickDimensions(brick, x + 1, y + 1);
 }
 
+TEST(TypeTests, Flip)
+{
+  EXPECT_EQ(Brick(0xF00F).flip_vertically(), Brick(0x0FF0));
+  EXPECT_EQ(Brick(0xF00F).flip_horizontally(), Brick(0x0FF0));
+  EXPECT_EQ(Brick(0xF0FF).flip_vertically(), Brick(0xFFF0));
+  EXPECT_EQ(Brick(0xF0FF).flip_horizontally(), Brick(0x0FFF));
+}
+
+TEST(TypeTests, Rotate)
+{
+  EXPECT_EQ(Brick(0b0000'0011'0000'0001).rotate(), Brick(0b0000'0001'0000'0011));
+  EXPECT_EQ(Brick(0b0000'0001'0000'0011).rotate(), Brick(0b0000'0010'0000'0011));
+  EXPECT_EQ(Brick(0b0000'0010'0000'0011).rotate(), Brick(0b0000'0011'0000'0010));
+  EXPECT_EQ(Brick(0b0000'0011'0000'0010).rotate(), Brick(0b0000'0011'0000'0001));
+}
+
 TEST(CombinationTests, CombinePredefined) {
   EXPECT_EQ(Board(0b00001111).combine(Board(0b11110000)), Board());
   // std::cout << Board(0xF0F0'F0F0'0F0F'0F0F) << "\n+" << Board(0x0F0F'0F0F'F0F0'F0F0) << "\n=" << Board();
