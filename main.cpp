@@ -4,6 +4,7 @@
 #include <random>
 #include <iterator>
 #include <fstream>
+#include <functional>
 
 #include "bricks.h"
 #include "types.h"
@@ -32,8 +33,31 @@ float eval1(Board b) {
     int freeBlocks = b.free_positions();
     Grades grades = b.grades();
     int borderLength = grades.free[1] + 2 * grades.free[2] + 3 * grades.free[3] + 4 * grades.free[4];
-    return 5 * freeBlocks - 2 * borderLength - grades.free[4] * 20 - grades.free[3] * 3 - grades.used[4] * 2 - grades.used[3];
+    return 3 * freeBlocks - 2 * borderLength - grades.free[4] * 20 - grades.free[3] * 3 - grades.used[4] * 2 - grades.used[3];
 }
+
+struct EvaluatorParams
+{
+    int freeBlockWeight;
+    int freeGradeWeight[5];
+    int usedGradeWeight[5];
+    float eval(Board b) {
+        int freeBlocks = b.free_positions();
+        int score = freeBlocks * freeBlockWeight;
+        Grades grades = b.grades();
+        for (int i = 0; i < 5; i++) {
+            score += grades.free[i] * freeGradeWeight[i] + grades.used[i] * usedGradeWeight[i];
+        }
+        return score;
+    }
+    auto evaluator() {
+        return [this](Board b){ return this->eval(b); };
+    }
+};
+
+void test(float (&evaluation)(Board)) {}
+int test2(std::function<float(Board)>) {return 0;}
+
 
 int main()
 {
@@ -42,6 +66,8 @@ int main()
     myfile.open("log.txt");
     Board board;
     size_t cleared = 0;
+    EvaluatorParams e1 {3, {0, -1, -3, -6, -24}, {0, 0, 0, -1, -2}};
+    test2(e1.evaluator());
     for(int i = 0; true; i++) {
         std::vector<Brick> bricks { 
             select_randomly(ALL_BRICKS),
@@ -50,7 +76,7 @@ int main()
         };
         myfile << "\niteration " << i << " cleared rows: " << cleared << " available bricks: " << bricks[0] << bricks[1] << bricks[2] << "\n";
         std::cout << "\niteration " << i << " cleared rows: " << cleared;
-        moves_t moves = computeBest(board, bricks, eval1);
+        moves_t moves = computeBest(board, bricks, e1.evaluator());
         if (moves.empty()) {
             break;
         }

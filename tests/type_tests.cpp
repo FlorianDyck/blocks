@@ -79,14 +79,17 @@ TEST(TypeTests, Rotate)
   EXPECT_EQ(Brick(0b0000'0011'0000'0010).rotate(), Brick(0b0000'0011'0000'0001));
 }
 
+void expect_combination(Board b1, Board b2, Board result, int expect_cleared) {
+  auto[board, cleared] = b1.combine(b2);
+  EXPECT_EQ(board, result);
+  EXPECT_EQ(cleared, expect_cleared) << board;
+}
+
 TEST(CombinationTests, CombinePredefined) {
-  EXPECT_EQ(Board(0b00001111).combine(Board(0b11110000)), Board());
-  // std::cout << Board(0xF0F0'F0F0'0F0F'0F0F) << "\n+" << Board(0x0F0F'0F0F'F0F0'F0F0) << "\n=" << Board();
-  EXPECT_EQ(Board(0xF0F0'F0F0'0F0F'0F0F).combine(Board(0x0F0F'0F0F'F0F0'F0F0)), Board());
-  // std::cout << Board(0xF0F0'F0F0'0000'0000) << "\n+" << Board(0x0F0F'0F0F'F0F0'F0F0) << "\n=" << Board();
-  EXPECT_EQ(Board(0xF0F0'F0F0'0000'0000).combine(Board(0x0F0F'0F0F'F0F0'F0F0)), Board());
-  // std::cout << Board(0xF0F0'F0F0'0804'0201) << "\n+" << Board(0x0F0F'0F0F'F0F0'F0F0) << "\n=" << Board(0x0804'0201);
-  EXPECT_EQ(Board(0xF0F0'F0F0'0804'0201).combine(Board(0x0F0F'0F0F'F0F0'F0F0)), Board(0x0804'0201));
+  expect_combination(0b00001111, 0b11110000, 0, 1);
+  expect_combination(0xF0F0'F0F0'0F0F'0F0F, 0x0F0F'0F0F'F0F0'F0F0, 0, 16);
+  expect_combination(0xF0F0'F0F0'0000'0000, 0x0F0F'0F0F'F0F0'F0F0, 0, 8);
+  expect_combination(0xF0F0'F0F0'0804'0201, 0x0F0F'0F0F'F0F0'F0F0, 0x0804'0201, 8);
   EXPECT_DEATH(Board(1).combine(Board(1)), "");
 }
 

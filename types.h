@@ -37,13 +37,13 @@ const i8 LINE_NUMBERS_REVERSED[] = {7, 6, 5, 4, 3, 2, 1, 0};
 const i8 COLUMN_NUMBERS_REVERSED[] = {7, 6, 5, 4, 3, 2, 1, 0};
 
 #define L(index) LINE << (index * BOARD_WIDTH.value)
-const u64 LINES[] = { L(0), L(1), L(2), L(3), L(4), L(5), L(6), L(7) };
-const u64 LINES_REVERSED[] = { L(7), L(6), L(5), L(4), L(3), L(2), L(1), L(0) };
+const u64 LINES[] = {L(0), L(1), L(2), L(3), L(4), L(5), L(6), L(7)};
+const u64 LINES_REVERSED[] = {L(7), L(6), L(5), L(4), L(3), L(2), L(1), L(0)};
 #undef L
 
 #define C(index) COLUMN << index
-const u64 COLUMNS[] = { C(0), C(1), C(2), C(3), C(4), C(5), C(6), C(7) };
-const u64 COLUMNS_REVERSED[] = { C(7), C(6), C(5), C(4), C(3), C(2), C(1), C(0) };
+const u64 COLUMNS[] = {C(0), C(1), C(2), C(3), C(4), C(5), C(6), C(7)};
+const u64 COLUMNS_REVERSED[] = {C(7), C(6), C(5), C(4), C(3), C(2), C(1), C(0)};
 #undef C
 
 // std::ostream &operator<<(std::ostream &os, i8 num)
@@ -53,22 +53,16 @@ const u64 COLUMNS_REVERSED[] = { C(7), C(6), C(5), C(4), C(3), C(2), C(1), C(0) 
 
 struct Position
 {
-    i8 x;
-    i8 y;
+    i8 x, y;
     constexpr Position() : x(0), y(0) {}
-    constexpr Position(i8 x, i8 y) : x(x), y(y)
-    {
-        assert(valid());
-    }
+    constexpr Position(i8 x, i8 y) : x(x), y(y) { assert(valid()); }
 
     constexpr const bool valid() const
     {
         return 0 <= x && x < BOARD_WIDTH && 0 <= y && y < BOARD_HEIGHT;
     }
 
-    int index() const {
-        return x.value + y.value * BOARD_WIDTH.value;
-    }
+    int index() const { return x.value + y.value * BOARD_WIDTH.value; }
 
     friend const u64 operator<<(const u64 blocks, const Position position)
     {
@@ -93,9 +87,10 @@ static int NumberOfSetBits(u64 i)
     return (int)((((i + (i >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >> 56);
 }
 
-struct Grades {
-    int free[5] = { 0, 0, 0, 0, 0 };
-    int used[5] = { 0, 0, 0, 0, 0 };
+struct Grades
+{
+    int free[5] = {0, 0, 0, 0, 0};
+    int used[5] = {0, 0, 0, 0, 0};
 };
 
 class Board
@@ -106,9 +101,7 @@ protected:
 public:
     Board() : positions(0) {}
     Board(u64 positions) : positions(positions) {}
-    bool operator==(const Board other) const {
-        return positions == other.positions;
-    }
+    bool operator==(const Board other) const { return positions == other.positions; }
 
     bool position(i8 x, i8 y);
 
@@ -117,84 +110,30 @@ public:
     i8 rightmost_position() const;
     i8 hightest_position() const;
 
-    bool can_combine(Board other) {
-        return !(positions & other.positions);
-    }
+    bool can_combine(Board other) { return !(positions & other.positions); }
 
-    std::pair<Board, size_t> combine(Board other) {
-        assert(this->can_combine(other));
-        u64 combination = positions | other.positions;
-        
-        std::vector<i8> lines;
-        for (i8 line: LINE_NUMBERS) {
-            if ((combination & (LINE << Position(0, line))) == (LINE << Position(0, line))) {
-                lines.push_back(line);
-            }
-        }
-        
-        std::vector<i8> columns;
-        for (i8 column: COLUMN_NUMBERS) {
-            if ((combination & (COLUMN << Position(column, 0))) == (COLUMN << Position(column, 0))) {
-                columns.push_back(column);
-            }
-        }
+    std::pair<Board, size_t> combine(Board other);
 
-        for(i8 line: lines) {
-            combination &= ~(LINE << Position(0, line));
-        }
-        for(i8 column: columns) {
-            combination &= ~(COLUMN << Position(column, 0));
-        }
+    int set_positions() { return NumberOfSetBits(positions); }
 
-        return std::pair(Board(combination), lines.size() + columns.size());
-    }
-
-    int set_positions() {
-        return NumberOfSetBits(positions);
-    }
-
-    int free_positions() {
+    int free_positions()
+    {
         return BOARD_HEIGHT.value * BOARD_WIDTH.value - set_positions();
     }
 
-    int differentBlocksAround(Position position) {
-        int index = position.index();
-        bool isSet = positions & (1ul << index);
-        auto isDifferent = [this, index, position, isSet](int offset) { return isSet != (bool) (positions & (1ul << (index + offset))); };
-        int result = 0;
-        if ((index >= BOARD_WIDTH.value) ? isDifferent(-BOARD_WIDTH.value) : !isSet ) result++;
-        if (((index % BOARD_WIDTH.value) != 0) ? isDifferent(-1) : !isSet ) result++;
-        if (((index % BOARD_WIDTH.value) != (BOARD_WIDTH.value - 1)) ? isDifferent(1) : !isSet ) result++;
-        if ((index < (BOARD_HEIGHT.value * BOARD_WIDTH.value - BOARD_WIDTH.value)) ? isDifferent(BOARD_WIDTH.value) : !isSet ) result++;
-        return result;
-    }
+    int differentBlocksAround(Position position);
 
-    Grades grades() {
-        Grades result;
-        for (i8 y: LINE_NUMBERS) {
-            for (i8 x: COLUMN_NUMBERS) {
-                Position position(x, y);
-                if (positions & (1ul << position)) {
-                    result.used[differentBlocksAround(position)]++;
-                } else {
-                    result.free[differentBlocksAround(position)]++;
-                }
-            }
-        }
-        return result;
-    }
+    Grades grades();
 
-    void print_eval_stats() {
+    void print_eval_stats()
+    {
         int freeBlocks = free_positions();
         Grades g = grades();
         int borderLength = g.free[1] + 2 * g.free[2] + 3 * g.free[3] + 4 * g.free[4];
         std::cout << freeBlocks << " free positions, border length " << borderLength;
     }
 
-    friend std::ostream &operator<<(std::ostream &os, Board const &m)
-    {
-        return m.print(os);
-    }
+    friend std::ostream &operator<<(std::ostream &os, Board const &m) { return m.print(os); }
 };
 
 class Brick : Board
@@ -213,49 +152,14 @@ public:
     {
         return (positions & LINE) && (positions & (LINE << Position(0, height.value - 1))) && (positions & COLUMN) && (positions & (COLUMN << Position(width.value - 1, 0)));
     }
-    
-    bool operator==(const Brick other) const {
-        return positions == other.positions;
-    }
 
-    Brick flip_vertically() {
-        u64 flipped_positions = 0;
-        for (i8 line = 0; line < height; line++) {
-            int index = Position(0, height.value - line.value - 1).index();
-            flipped_positions |= ((positions >> index) & LINE) << Position(0, line);
-        }
-        return Brick(flipped_positions);
-    }
+    bool operator==(const Brick other) const { return positions == other.positions; }
 
-    Brick flip_horizontally() {
-        u64 flipped_positions = 0;
-        for (i8 column = 0; column < width; column++) {
-            int index = Position(width.value - column.value - 1, 0).index();
-            flipped_positions |= ((positions >> index) & COLUMN) << Position(column, 0);
-        }
-        return Brick(flipped_positions);
-    }
+    Brick flip_vertically();
+    Brick flip_horizontally();
+    Brick rotate();
+    Board operator<<(Position pos) { return positions << pos; }
 
-    Brick rotate() {
-        u64 rotated_positions = 0;
-        for (i8 y = 0; y < height; y++) {
-            for (i8 x = 0; x < width; x++) {
-                if (position(x, y)) {
-                    rotated_positions |= 1 << Position(height.value - 1 - y.value, x);
-                }
-            }
-        }
-        return Brick(rotated_positions);
-    }
-
-    Board operator<<(Position pos) {
-        return positions << pos;
-    }
-
-    std::ostream &print3(std::ostream &os) const;
-
-    friend std::ostream &operator<<(std::ostream &os, Brick const &m)
-    {
-        return m.print3(os);
-    }
+    std::ostream &print(std::ostream &os) const;
+    friend std::ostream &operator<<(std::ostream &os, Brick const &m) { return m.print(os); }
 };
