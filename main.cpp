@@ -41,7 +41,7 @@ struct EvaluatorParams
     int freeBlockWeight;
     int freeGradeWeight[5];
     int usedGradeWeight[5];
-    float eval(Board b) {
+    inline float eval(Board b) {
         int freeBlocks = b.free_positions();
         int score = freeBlocks * freeBlockWeight;
         Grades grades = b.grades();
@@ -50,43 +50,48 @@ struct EvaluatorParams
         }
         return score;
     }
-    auto evaluator() {
-        return [this](Board b){ return this->eval(b); };
+    inline auto evaluator() {
+        return [this](Board b){ return eval(b); };
     }
 };
 
-void test(float (&evaluation)(Board)) {}
-int test2(std::function<float(Board)>) {return 0;}
-
-
-int main()
-{
-    // std::vector<Brick> bricks { Brick(0x0F0F0F), Brick(0x0F0F03), Brick(0x0C0F0F) };
-    std::ofstream myfile;
-    myfile.open("log.txt");
+struct Game{
     Board board;
-    size_t cleared = 0;
-    EvaluatorParams e1 {3, {0, -1, -3, -6, -24}, {0, 0, 0, -1, -2}};
-    test2(e1.evaluator());
+    size_t cleared {0};
+};
+
+template <typename ostream1, typename ostream2>
+void log_game(ostream1 &full_log, ostream2& partial_log, std::function<float(Board)> evaluation) {
+    Game game;
     for(int i = 0; true; i++) {
         std::vector<Brick> bricks { 
             select_randomly(ALL_BRICKS),
             select_randomly(ALL_BRICKS),
             select_randomly(ALL_BRICKS)
         };
-        myfile << "\niteration " << i << " cleared rows: " << cleared << " available bricks: " << bricks[0] << bricks[1] << bricks[2] << "\n";
-        std::cout << "\niteration " << i << " cleared rows: " << cleared;
-        moves_t moves = computeBest(board, bricks, e1.evaluator());
+        full_log << "\niteration " << i << " cleared rows: " << game.cleared << " available bricks: " << bricks[0] << bricks[1] << bricks[2] << "\n";
+        partial_log << "\niteration " << i << " cleared rows: " << game.cleared;
+        moves_t moves = computeBest(game.board, bricks, evaluation);
         if (moves.empty()) {
             break;
         }
         for (Move move: moves) {
-            myfile << "\n+" << (move.brick << Position(move.x, move.y)) << "\n=" << move.result;
-            cleared += move.cleared;
+            full_log << "\n+" << (move.brick << Position(move.x, move.y)) << "\n=" << move.result;
+            game.cleared += move.cleared;
         }
-        board = moves.back().result;
-        std::cout << board;
+        game.board = moves.back().result;
+        partial_log << game.board;
     };
+}
+
+int main()
+{
+    EvaluatorParams e1 {3, {0, -1, -3, -6, -24}, {0, 0, 0, -2, -10}};
+    EvaluatorParams e2 {3, {0, -1, -2, -5, -24}, {0, 0, 0, -5, -4}};
+
+    std::ofstream myfile;
+    myfile.open("log.txt");
+    log_game(myfile, std::cout, e2.evaluator());
     myfile.close();
 }
 
