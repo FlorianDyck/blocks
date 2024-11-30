@@ -1,57 +1,18 @@
 #include<string.h>
-#include "types.h"
+#include "brick.h"
 
-bool Board::position(i8 x, i8 y)
-{
-    return (positions >> (x.value + y.value * BOARD_WIDTH.value)) & 0x1;
-}
+// XY X(u8 x) { return XY(x, 0); }
+// // XY Y(u8 y) { return XY(0, y); }
 
-std::pair<Board, size_t> Board::combine(Board other) {
-    assert(this->can_combine(other));
-    u64 combination = positions | other.positions;
-    
-    std::vector<i8> lines;
-    for (i8 line: LINE_NUMBERS) {
-        if ((combination & (LINE << Position(0, line))) == (LINE << Position(0, line))) {
-            lines.push_back(line);
-        }
-    }
-    
-    std::vector<i8> columns;
-    for (i8 column: COLUMN_NUMBERS) {
-        if ((combination & (COLUMN << Position(column, 0))) == (COLUMN << Position(column, 0))) {
-            columns.push_back(column);
-        }
-    }
-
-    for(i8 line: lines) {
-        combination &= ~(LINE << Position(0, line));
-    }
-    for(i8 column: columns) {
-        combination &= ~(COLUMN << Position(column, 0));
-    }
-
-    return std::pair(Board(combination), lines.size() + columns.size());
-}
-
-int Board::differentBlocksAround(Position position) {
-    int index = position.index();
-    bool isSet = positions & (1ul << index);
-    auto isDifferent = [this, index, position, isSet](int offset) { return isSet != (bool) (positions & (1ul << (index + offset))); };
-    int result = 0;
-    if ((index >= BOARD_WIDTH.value) ? isDifferent(-BOARD_WIDTH.value) : !isSet ) result++;
-    if (((index % BOARD_WIDTH.value) != 0) ? isDifferent(-1) : !isSet ) result++;
-    if (((index % BOARD_WIDTH.value) != (BOARD_WIDTH.value - 1)) ? isDifferent(1) : !isSet ) result++;
-    if ((index < (BOARD_HEIGHT.value * BOARD_WIDTH.value - BOARD_WIDTH.value)) ? isDifferent(BOARD_WIDTH.value) : !isSet ) result++;
-    return result;
-}
+// const XY X0 = X(0), X1 = X(1), X2 = X(2), X3 = X(3), X4 = X(4), X5 = X(5), X6 = X(6), X7 = X(7);
+// const XY Y0 = Y(0), Y1 = Y(1), Y2 = Y(2), Y3 = Y(3), Y4 = Y(4), Y5 = Y(5), Y6 = Y(6), Y7 = Y(7);
 
 Grades Board::grades() {
     Grades result;
-    for (i8 y: LINE_NUMBERS) {
-        for (i8 x: COLUMN_NUMBERS) {
-            Position position(x, y);
-            if (positions & (1ul << position)) {
+    for (XY y: YS) {
+        for (XY x: XS) {
+            XY position = x + y;
+            if (positions & (1ul << position).positions) {
                 result.used[differentBlocksAround(position)]++;
             } else {
                 result.free[differentBlocksAround(position)]++;
@@ -63,84 +24,60 @@ Grades Board::grades() {
 
 Brick Brick::flip_vertically() {
     u64 flipped_positions = 0;
-    for (i8 line = 0; line < height; line++) {
-        int index = Position(0, height.value - line.value - 1).index();
-        flipped_positions |= ((positions >> index) & LINE) << Position(0, line);
+    for (u8 line = 0; line <= size.y_int(); line++) {
+        int index = XY(0, size.y_int() - line).value;
+        flipped_positions |= (((board.positions >> index) & LINE.positions) << XY(0, line)).positions;
     }
     return Brick(flipped_positions);
 }
 
 Brick Brick::flip_horizontally() {
     u64 flipped_positions = 0;
-    for (i8 column = 0; column < width; column++) {
-        int index = Position(width.value - column.value - 1, 0).index();
-        flipped_positions |= ((positions >> index) & COLUMN) << Position(column, 0);
+    for (u8 column = 0; column <= size.x_int(); column++) {
+        int index = XY(size.x_int() - column, 0).value;
+        flipped_positions |= (((board.positions >> index) & COLUMN.positions) << XY(column, 0)).positions;
     }
     return Brick(flipped_positions);
 }
 
 Brick Brick::rotate() {
     u64 rotated_positions = 0;
-    for (i8 y = 0; y < height; y++) {
-        for (i8 x = 0; x < width; x++) {
-            if (position(x, y)) {
-                rotated_positions |= 1 << Position(height.value - 1 - y.value, x);
+    for (u8 y = 0; y <= size.y_int(); y++) {
+        for (u8 x = 0; x <= size.x_int(); x++) {
+            if (board.position(XY(x, y))) {
+                rotated_positions |= (1 << XY(size.y_int() - y, x)).positions;
             }
         }
     }
     return Brick(rotated_positions);
 }
 
-std::ostream &print_range(u64 positions, std::ostream &os, i8 bound_x, i8 bound_y)
+std::ostream &print_range(u64 positions, std::ostream &os, XY bound)
 {
-    os << "\n|" << std::string(bound_x.value, '=') << "|\n|";
+    os << "\n|" << std::string(bound.x_int() + 1, '=') << "|\n|";
 
-    for (i8 y = 0; y < bound_y; y++)
+    for (u8 y = 0; y <= bound.y_int(); y++)
     {
-        for (i8 x = 0; x < bound_x; x++)
+        for (u8 x = 0; x <= bound.x_int(); x++)
         {
             os << (positions & 0x1 ? "X" : ".");
             positions >>= 1;
         }
         os << "|\n|";
-        positions >>= BOARD_WIDTH.value - bound_x.value;
+        positions >>= BOARD_WIDTH - bound.x_int() - 1;
     }
 
-    os << std::string(bound_x.value, '=') << "|";
+    os << std::string(bound.x_int() + 1, '=') << "|";
 
     return os;
 }
 
 std::ostream &Board::print(std::ostream &os) const
 {
-    return print_range(positions, os, BOARD_WIDTH, BOARD_HEIGHT);
-}
-
-i8 Board::rightmost_position() const
-{
-    for (i8 i : COLUMN_NUMBERS_REVERSED)
-    {
-        if ((COLUMN << Position(i, 0)) & positions)
-        {
-            return i;
-        }
-    }
-    return -1;
-}
-
-i8 Board::hightest_position() const
-{
-    for (i8 i : LINE_NUMBERS_REVERSED)
-    {
-        if ((LINE << Position(0, i)) & positions)
-        {
-            return i;
-        }
-    }
-    return -1;
+    return print_range(positions, os, XY(7,7));
 }
 
 std::ostream &Brick::print(std::ostream &os) const
 {
-    return print_range(positions, os, width, height);
+    return print_range(board.positions, os, size);
 }

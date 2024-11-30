@@ -6,8 +6,10 @@
 #include <fstream>
 #include <functional>
 
+#include "xy.h"
+#include "board.h"
+#include "brick.h"
 #include "bricks.h"
-#include "types.h"
 #include "computation.h"
 
 template<typename Iter, typename RandomGenerator>
@@ -22,11 +24,23 @@ Iter select_randomly(Iter start, Iter end) {
     std::advance(start, distribution(generator));
     return start;
 }
+// const Brick select_randomly(std::vector<Brick>::iterator start, std::vector<Brick>::iterator end) {
+//     static std::random_device random_device;
+//     static std::mt19937 generator(random_device());
+//     std::uniform_int_distribution<> distribution(0, std::distance(start, end) - 1);
+//     std::advance(start, distribution(generator));
+//     return *start;
+// }
 
 template<typename T>
-const T select_randomly(const std::vector<T> vec) {
+const T select_randomly(const std::vector<T>& vec) {
+    // return vec[0];
     return *select_randomly(vec.begin(), vec.end());
 }
+
+// const Brick select_randomly(const std::vector<Brick>& vec) {
+//     return *select_randomly(vec.begin(), vec.end());
+// }
 
 
 float eval1(Board b) {
@@ -76,7 +90,7 @@ void log_game(ostream1 &full_log, ostream2& partial_log, std::function<float(Boa
             break;
         }
         for (Move move: moves) {
-            full_log << "\n+" << (move.brick << Position(move.x, move.y)) << "\n=" << move.result;
+            full_log << "\n+" << (move.brick << move.position) << "\n=" << move.result;
             game.cleared += move.cleared;
         }
         game.board = moves.back().result;

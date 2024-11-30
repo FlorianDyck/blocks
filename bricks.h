@@ -1,4 +1,4 @@
-#include "types.h"
+#include "brick.h"
 #include <vector>
 
 

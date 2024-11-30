@@ -22,14 +22,14 @@ void computeBest(
         }
         Brick current_brick = remaining_bricks[i];
 
-        for (i8 y = 0; y + current_brick.height <= BOARD_HEIGHT; y++) {
-            for (i8 x = 0; x + current_brick.width <= BOARD_WIDTH; x++) {
-                Board shifted_brick = current_brick << Position(x, y);
+        for (u8 y = 0; y + current_brick.size.y_int() < BOARD_HEIGHT; y++) {
+            for (u8 x = 0; x + current_brick.size.x_int() < BOARD_WIDTH; x++) {
+                Board shifted_brick = current_brick << XY(x, y);
                 if (!current.can_combine(shifted_brick)) {
                     continue;
                 }
                 auto[new_board, cleared] = current.combine(shifted_brick);
-                current_moves.push_back({current_brick, x, y, new_board, cleared});
+                current_moves.push_back({current_brick, XY(x, y), new_board, cleared});
 
                 if (now_remaining.empty()) {
                     float new_score = evaluation(new_board);

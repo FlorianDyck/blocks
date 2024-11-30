@@ -1,13 +1,12 @@
 #include <functional>
-#include "types.h"
+#include "brick.h"
 
 // using evaluation = std::function<void()>;
 // typedef std::function<void()> evaluation;
 
 struct Move {
     Brick brick;
-    i8 x;
-    i8 y;
+    XY position;
     Board result;
     size_t cleared;
 };

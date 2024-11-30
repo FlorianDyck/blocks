@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 #include <random>
-#include "../types.h"
+#include "../xy.h"
+#include "../brick.h"
 
-void expectBrickDimensions(Brick brick, i8 width, i8 height) {
-  EXPECT_EQ(brick.width, width) << "Brick width is not " << width << ":" << brick;
-  EXPECT_EQ(brick.height, height) << "Brick height is not " << height << ":" << brick;
+void expectBrickDimensions(Brick brick, XY size) {
+  EXPECT_EQ(brick.size, size) << "Brick size is not " << size << ":" << brick;
 }
 
 std::string captureStdout(std::function<void()> writer) {
@@ -13,28 +13,38 @@ std::string captureStdout(std::function<void()> writer) {
     return testing::internal::GetCapturedStdout();
 }
 
-void testBrick(Brick brick, i8 expected_width, i8 expected_height, std::string expected_output) {
-    expectBrickDimensions(brick, expected_width, expected_height);
+void testBrick(Brick brick, XY expected_size, std::string expected_output) {
+    expectBrickDimensions(brick, expected_size);
     EXPECT_EQ(captureStdout([brick](){ std::cout << brick; }), expected_output);
 }
 
-i8 rand(i8 min, i8 max)
+int rand(int min, int max)
 {
   static std::random_device random_device;                // obtain a random number from hardware
   static std::mt19937 generator(random_device());         // seed the generator
-  std::uniform_int_distribution<> distribution(min.value, max.value); // define the range
+  std::uniform_int_distribution<> distribution(min, max); // define the range
   return distribution(generator);
+}
+
+TEST(TypeTests, XYs)
+{
+  EXPECT_EQ(X3.value, 3);
+  EXPECT_EQ(X3.x_int(), 3);
+  EXPECT_EQ(Y3.value, 24);
+  EXPECT_EQ(Y3.y_int(), 3);
+  EXPECT_EQ(Board(0b11110000), Brick(0b00001111) << X4);
+  EXPECT_EQ(Board(0b00001111'00000000), Brick(0b00001111) << Y1);
 }
 
 TEST(TypeTests, PredefinedBricks)
 {
-  testBrick(Brick(0b00000001), 1, 1, "\n|=|\n|X|\n|=|");
-  testBrick(Brick(0b00011111), 5, 1, "\n|=====|\n|XXXXX|\n|=====|");
+  testBrick(Brick(0b00000001), XY(0, 0), "\n|=|\n|X|\n|=|");
+  testBrick(Brick(0b00011111), XY(4, 0), "\n|=====|\n|XXXXX|\n|=====|");
 
-  testBrick(Brick(0b00011111'00011111), 5, 2, "\n|=====|\n|XXXXX|\n|XXXXX|\n|=====|");
-  testBrick(Brick(0b00000011'00000110), 3, 2, "\n|===|\n|.XX|\n|XX.|\n|===|");
+  testBrick(Brick(0b00011111'00011111), XY(4, 1), "\n|=====|\n|XXXXX|\n|XXXXX|\n|=====|");
+  testBrick(Brick(0b00000011'00000110), XY(2, 1), "\n|===|\n|.XX|\n|XX.|\n|===|");
 
-  testBrick(Brick(0x01'01'01'01'01), 1, 5, "\n|=|\n|X|\n|X|\n|X|\n|X|\n|X|\n|=|");
+  testBrick(Brick(0x01'01'01'01'01), XY(0, 4), "\n|=|\n|X|\n|X|\n|X|\n|X|\n|X|\n|=|");
 }
 
 TEST(TypeTests, InvalidBricks) {
@@ -45,22 +55,22 @@ TEST(TypeTests, InvalidBricks) {
 
 TEST(TypeTests, FullPropertyBrickSize)
 {
-  for (Position pos: board_positions) {
-      Brick brick(0b1 | (0b1 << pos));
+  for (XY pos: board_xys) {
+      Brick brick(0b1 | (0b1 << pos).positions);
       // std::cout << pos << brick << std::endl;
-      expectBrickDimensions(brick, pos.x + 1, pos.y + 1);
+      expectBrickDimensions(brick, pos);
   }
 }
 
 TEST(TypeTests, RandPropertyBrickSize)
 {
 
-  i8 x = rand(0, BOARD_WIDTH.value - 1);
-  i8 y = rand(0, BOARD_HEIGHT.value - 1);
-  Position pos(x, y);
-  Brick brick(0b1 | (0b1 << pos));
+  int x = rand(0, BOARD_WIDTH - 1);
+  int y = rand(0, BOARD_HEIGHT - 1);
+  XY pos(x, y);
+  Brick brick(0b1 | (0b1 << pos).positions);
   // std::cout << pos << brick << std::endl;
-  expectBrickDimensions(brick, x + 1, y + 1);
+  expectBrickDimensions(brick, pos);
 }
 
 TEST(TypeTests, Flip)
@@ -73,6 +83,7 @@ TEST(TypeTests, Flip)
 
 TEST(TypeTests, Rotate)
 {
+  EXPECT_EQ(Brick(0b0000'0000'0000'0011).rotate(), Brick(0b0000'0001'0000'0001));
   EXPECT_EQ(Brick(0b0000'0011'0000'0001).rotate(), Brick(0b0000'0001'0000'0011));
   EXPECT_EQ(Brick(0b0000'0001'0000'0011).rotate(), Brick(0b0000'0010'0000'0011));
   EXPECT_EQ(Brick(0b0000'0010'0000'0011).rotate(), Brick(0b0000'0011'0000'0010));
