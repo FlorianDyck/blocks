@@ -39,8 +39,6 @@ public:
 
     constexpr bool position(XY xy) const;
 
-    std::ostream &print(std::ostream &os) const;
-
     constexpr const X rightmost_position() const;
     constexpr const Y hightest_position() const;
 
@@ -59,6 +57,8 @@ public:
 
     Grades grades();
 
+    std::ostream &print_range(std::ostream &os, XY bound) const;
+    std::ostream &print(std::ostream &os) const;
     void print_eval_stats()
     {
         int freeBlocks = free_positions();
