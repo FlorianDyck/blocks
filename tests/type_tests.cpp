@@ -118,3 +118,11 @@ TEST(TypeTests, FreeTest) {
   EXPECT_EQ(Board(0xFF).free_positions(), 56);
   EXPECT_EQ(Board(0xFFFF'FFFF'FFFF'FFFF).free_positions(), 0);
 }
+
+TEST(TypeTests, PlacableTest) {
+  EXPECT_EQ(Brick(0x01'01'01'01'01).placable_positions(0x80'40'20'10'08'04'02'01), 0b00000111'10000011'11000001'11100000);
+}
+
+TEST(TypeTests, Stupid) {
+  EXPECT_EQ(1+1, 2);
+}

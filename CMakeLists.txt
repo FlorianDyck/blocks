@@ -12,7 +12,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-add_executable(blocks main.cpp types.cpp bricks.cpp computation.cpp)
+add_executable(blocks main.cpp board.cpp brick.cpp bricks.cpp computation.cpp)
 
 enable_testing()
 include(GoogleTest)
@@ -21,7 +21,8 @@ include(GoogleTest)
 add_executable(
   type_tests
   tests/type_tests.cpp
-  types.cpp
+  board.cpp
+  brick.cpp
 )
 target_link_libraries(
     type_tests

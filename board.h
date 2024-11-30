@@ -34,8 +34,12 @@ public:
     constexpr Board(const Board& other) = default;
     constexpr Board(Board&& other) = default;
     constexpr Board& operator=(const Board& other) = default;
+
     constexpr bool operator==(const Board other) const { return positions == other.positions; }
+
     constexpr Board operator|(const Board other) const { return positions | other.positions; }
+
+    constexpr bool operator[](XY xy) const { return (positions >> xy.value) & 1; }
 
     constexpr bool position(XY xy) const;
 

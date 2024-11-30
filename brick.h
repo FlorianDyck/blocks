@@ -12,6 +12,7 @@ class Brick
 {
 public:
     Board board {};
+    u64 placable_positions_mask {};
     XY size {};
     std::vector<XY> blocks {};
 
@@ -20,8 +21,20 @@ public:
         : board(positions),
           size(board.rightmost_position() + board.hightest_position())
     {
-        blocks.reserve(board.set_positions());
         assert(valid());
+        
+        blocks.reserve(board.set_positions());
+        for(auto position: size)
+        {
+            if(board[position])
+            {
+                blocks.push_back(position);
+            }
+        }
+        for(auto position: XY(7,7) - size)
+        {
+            placable_positions_mask |= toBoard(position).positions;
+        }
     }
     constexpr Brick(const Brick& other) = default;
     constexpr Brick(Brick&& other) = default;
@@ -55,7 +68,7 @@ constexpr const u64 Brick::placable_positions(const Board board) const
     u64 result = 0;
     for (auto position: blocks)
     {
-
+        result |= board.positions >> position.value;
     }
-    return ~result;
+    return ~result & placable_positions_mask;
 }

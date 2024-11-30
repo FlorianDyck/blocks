@@ -42,7 +42,7 @@ public:
     }
     inline constexpr XY operator-(XY other) const
     {
-        assert(x_int() >= other.x_int() && y_int() > other.y_int());
+        assert(x_int() >= other.x_int() && y_int() >= other.y_int());
         return value - other.value;
     }
 
