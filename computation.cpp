@@ -13,41 +13,36 @@ void computeBest(
     std::function<float(Board)> evaluation
 )
 {
-    for (size_t i = 0; i < remaining_bricks.size(); i++) {
-
-        Brick current_brick = remaining_bricks[i];
-        remaining_bricks.erase(remaining_bricks.begin() + i);
-
-        for (u8 y = 0; y + current_brick.size.y_int() < BOARD_HEIGHT; y++) {
-            for (u8 x = 0; x + current_brick.size.x_int() < BOARD_WIDTH; x++) {
-                Board shifted_brick = current_brick << XY(x, y);
-                if (!current.can_combine(shifted_brick)) {
-                    continue;
-                }
-                auto[new_board, cleared] = current.combine(shifted_brick);
-                current_moves.push_back({current_brick, XY(x, y), new_board, cleared});
-
-                if (remaining_bricks.empty()) {
-                    float new_score = evaluation(new_board);
-                    if (new_score > best_evaluation) {
-                        // for (Move move: current_moves) {
-                        //     std::cout << "\n+" << (move.brick << Position(move.x, move.y)) << "\n=" << move.result;
-                        // }
-                        // std::cout << new_board << "\n";
-                        // new_board.print_eval_stats();
-                        // std::cout << "\nevaluation = " << new_score << std::endl;
-                        best_evaluation = new_score;
-                        best_moves = current_moves;
-                    }
-                } else {
-                    computeBest(new_board, current_moves, remaining_bricks, best_evaluation, best_moves, evaluation);
-                }
-
-                current_moves.pop_back();
+    Brick current_brick = remaining_bricks.back();
+    remaining_bricks.pop_back();
+    for (size_t i = 0; i <= remaining_bricks.size(); i++) {
+        for (XY xy: XY(7,7) - current_brick.size)
+        {
+            Board shifted_brick = current_brick << xy;
+            if (!current.can_combine(shifted_brick)) {
+                continue;
             }
+            auto[new_board, cleared] = current.combine(shifted_brick);
+            current_moves.push_back({current_brick, xy, new_board, cleared});
+
+            if (remaining_bricks.empty()) {
+                float new_score = evaluation(new_board);
+                if (new_score > best_evaluation) {
+                    best_evaluation = new_score;
+                    best_moves = current_moves;
+                }
+            } else {
+                computeBest(new_board, current_moves, remaining_bricks, best_evaluation, best_moves, evaluation);
+            }
+
+            current_moves.pop_back();
         }
-        remaining_bricks.push_back(current_brick);
+        if (i < remaining_bricks.size())
+        {
+            std::swap(remaining_bricks[i], current_brick);
+        }
     }
+    remaining_bricks.push_back(current_brick);
 }
 
 moves_t computeBest(

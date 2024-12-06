@@ -55,7 +55,7 @@ TEST(TypeTests, InvalidBricks) {
 
 TEST(TypeTests, FullPropertyBrickSize)
 {
-  for (XY pos: board_xys) {
+  for (XY pos: BOARD_XYS) {
       Brick brick(0b1 | (0b1 << pos).positions);
       // std::cout << pos << brick << std::endl;
       expectBrickDimensions(brick, pos);

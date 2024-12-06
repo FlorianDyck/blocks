@@ -17,7 +17,7 @@ struct Grades
 
 using u64 = uint_fast64_t;
 
-constexpr const static int NumberOfSetBits(u64 i)
+constexpr static int NumberOfSetBits(u64 i)
 {
     i = i - ((i >> 1) & 0x5555555555555555UL);
     i = (i & 0x3333333333333333UL) + ((i >> 2) & 0x3333333333333333UL);
@@ -43,21 +43,21 @@ public:
 
     constexpr bool position(XY xy) const;
 
-    constexpr const X rightmost_position() const;
-    constexpr const Y hightest_position() const;
+    constexpr X rightmost_position() const;
+    constexpr Y hightest_position() const;
 
     constexpr bool can_combine(const Board other) const { return !(positions & other.positions); }
 
-    constexpr const std::pair<Board, u8> combine(Board other) const;
+    constexpr std::pair<Board, u8> combine(Board other) const;
 
-    constexpr const int set_positions() const { return NumberOfSetBits(positions); }
+    constexpr int set_positions() const { return NumberOfSetBits(positions); }
 
-    constexpr const int free_positions() const
+    constexpr int free_positions() const
     {
         return BOARD_HEIGHT * BOARD_WIDTH - set_positions();
     }
 
-    constexpr const int differentBlocksAround(const XY position) const;
+    constexpr int differentBlocksAround(const XY position) const;
 
     Grades grades();
 
@@ -98,7 +98,7 @@ inline constexpr const Board toBoard(XY xy)
     return ((u64)1) << xy.value;
 };
 
-constexpr const std::pair<Board, u8> Board::combine(const Board other) const {
+constexpr std::pair<Board, u8> Board::combine(const Board other) const {
     assert(can_combine(other));
     u64 combination = positions | other.positions;
     u8 cleared;
@@ -129,7 +129,7 @@ constexpr bool Board::position(XY xy) const
     return (positions >> xy.value) & 0x1;
 }
 
-constexpr const int Board::differentBlocksAround(const XY position) const
+constexpr int Board::differentBlocksAround(const XY position) const
 {
     int index = position.value;
     bool isSet = positions & (1ul << index);
@@ -147,7 +147,7 @@ inline constexpr const Board operator|(const XY lhs, const XY rhs)
     return toBoard(lhs) | toBoard(rhs);
 }
 
-constexpr const X Board::rightmost_position() const
+constexpr X Board::rightmost_position() const
 {
     for (X x : XS_REV)
     {
@@ -159,7 +159,7 @@ constexpr const X Board::rightmost_position() const
     return -1;
 }
 
-constexpr const Y Board::hightest_position() const
+constexpr Y Board::hightest_position() const
 {
     for (Y y : YS_REV)
     {
