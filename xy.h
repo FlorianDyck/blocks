@@ -81,7 +81,7 @@ struct XYwithin
     XY position;
     XY bound;
     inline constexpr XYwithin(XY position, XY bound): position(position), bound(bound) {}
-    XY operator*() { return position; }
+    inline constexpr XY operator*() { return position; }
     inline constexpr void operator++() 
     { 
         if (position.x() == bound.x())

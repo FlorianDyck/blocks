@@ -48,7 +48,7 @@ public:
 
     constexpr bool can_combine(const Board other) const { return !(positions & other.positions); }
 
-    constexpr const std::pair<Board, size_t> combine(Board other) const;
+    constexpr const std::pair<Board, u8> combine(Board other) const;
 
     constexpr const int set_positions() const { return NumberOfSetBits(positions); }
 
@@ -98,32 +98,30 @@ inline constexpr const Board toBoard(XY xy)
     return ((u64)1) << xy.value;
 };
 
-constexpr const std::pair<Board, size_t> Board::combine(const Board other) const {
-    assert(this->can_combine(other));
+constexpr const std::pair<Board, u8> Board::combine(const Board other) const {
+    assert(can_combine(other));
     u64 combination = positions | other.positions;
+    u8 cleared;
     
-    std::vector<XY> lines;
-    for (XY y: YS) {
+    u64 lines = 0;
+    for (Y y: YS) {
         if ((combination & (LINE << y).positions) == (LINE << y)) {
-            lines.push_back(y);
+            lines |= toBoard(y).positions;
+            cleared += 1;
         }
     }
     
-    std::vector<XY> columns;
+    u64 columns = 0;
     for (XY x: XS) {
         if ((combination & (COLUMN << x).positions) == (COLUMN << x)) {
-            columns.push_back(x);
+            columns |= toBoard(x).positions;
+            cleared += 1;
         }
     }
 
-    for(XY y: lines) {
-        combination &= ~(LINE << y).positions;
-    }
-    for(XY x: columns) {
-        combination &= ~(COLUMN << x).positions;
-    }
+    combination &= ~((lines * LINE.positions) | (columns * COLUMN.positions));
 
-    return std::pair(Board(combination), lines.size() + columns.size());
+    return std::pair(Board(combination), cleared);
 }
 
 constexpr bool Board::position(XY xy) const

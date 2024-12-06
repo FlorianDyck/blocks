@@ -20,21 +20,21 @@ void add_all_versions(Brick brick, std::vector<Brick>& vec) {
 std::vector<Brick> all_bricks() {
     std::vector<Brick> result;
 
-    add_all_versions(Brick(0b0000'0001), result); // 1x1
-    add_all_versions(Brick(0b0000'0011), result); // 1x2
-    add_all_versions(Brick(0b0000'0111), result); // 1x3
-    add_all_versions(Brick(0b0000'1111), result); // 1x4
-    add_all_versions(Brick(0b0001'1111), result); // 1x5
-    
-    add_all_versions(Brick(0b0000'0011'0000'0011), result); // 2x2
-    add_all_versions(Brick(0b0000'0111'0000'0111'0000'0111), result); // 3x3
-    
-    add_all_versions(Brick(0b0000'0001'0000'0011), result); // 2L2
-    add_all_versions(Brick(0b0000'0001'0000'0111), result); // 3L2
-    add_all_versions(Brick(0b0000'0001'0000'0001'0000'0111), result); // 3L3
+    add_all_versions(brick1x1, result);
+    add_all_versions(brick2x2, result);
+    add_all_versions(brick3x3, result);
 
-    add_all_versions(Brick(0b0000'0010'0000'0111), result); // T
-    add_all_versions(Brick(0b0000'0110'0000'0011), result); // Z
+    add_all_versions(brick2x1, result);
+    add_all_versions(brick3x1, result);
+    add_all_versions(brick4x1, result);
+    add_all_versions(brick5x1, result);
+
+    add_all_versions(brick2L2, result);
+    add_all_versions(brick3L2, result);
+    add_all_versions(brick3L3, result);
+
+    add_all_versions(brickT, result);
+    add_all_versions(brickZ, result);
 
     return result;
 }

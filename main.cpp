@@ -7,9 +7,7 @@
 #include <functional>
 
 #include "xy.h"
-#include "board.h"
-#include "brick.h"
-#include "bricks.h"
+#include "evaluators.h"
 #include "computation.h"
 
 template<typename Iter, typename RandomGenerator>
@@ -24,23 +22,12 @@ Iter select_randomly(Iter start, Iter end) {
     std::advance(start, distribution(generator));
     return start;
 }
-// const Brick select_randomly(std::vector<Brick>::iterator start, std::vector<Brick>::iterator end) {
-//     static std::random_device random_device;
-//     static std::mt19937 generator(random_device());
-//     std::uniform_int_distribution<> distribution(0, std::distance(start, end) - 1);
-//     std::advance(start, distribution(generator));
-//     return *start;
-// }
 
 template<typename T>
 const T select_randomly(const std::vector<T>& vec) {
     // return vec[0];
     return *select_randomly(vec.begin(), vec.end());
 }
-
-// const Brick select_randomly(const std::vector<Brick>& vec) {
-//     return *select_randomly(vec.begin(), vec.end());
-// }
 
 
 float eval1(Board b) {
@@ -49,25 +36,6 @@ float eval1(Board b) {
     int borderLength = grades.free[1] + 2 * grades.free[2] + 3 * grades.free[3] + 4 * grades.free[4];
     return 3 * freeBlocks - 2 * borderLength - grades.free[4] * 20 - grades.free[3] * 3 - grades.used[4] * 2 - grades.used[3];
 }
-
-struct EvaluatorParams
-{
-    int freeBlockWeight;
-    int freeGradeWeight[5];
-    int usedGradeWeight[5];
-    inline float eval(Board b) {
-        int freeBlocks = b.free_positions();
-        int score = freeBlocks * freeBlockWeight;
-        Grades grades = b.grades();
-        for (int i = 0; i < 5; i++) {
-            score += grades.free[i] * freeGradeWeight[i] + grades.used[i] * usedGradeWeight[i];
-        }
-        return score;
-    }
-    inline auto evaluator() {
-        return [this](Board b){ return eval(b); };
-    }
-};
 
 struct Game{
     Board board;
@@ -101,11 +69,13 @@ void log_game(ostream1 &full_log, ostream2& partial_log, std::function<float(Boa
 int main()
 {
     EvaluatorParams e1 {3, {0, -1, -3, -6, -24}, {0, 0, 0, -2, -10}};
-    EvaluatorParams e2 {3, {0, -1, -2, -5, -24}, {0, 0, 0, -5, -4}};
+    EvaluatorParams e2 {3, {0, -1, -2, -5, -24}, {0, 0, 0, -1, -5}};
+    EvaluatorPlacableParams e3 {3, {0, -1, -2, -5, -24}, {0, 0, 0, -1, -5}, 10, 5};
+    EvaluatorPlacableParams2 e4 {3, {0, -1, -2, -5, -24}, {0, 0, 0, -1, -5}, 2, 1};
 
     std::ofstream myfile;
     myfile.open("log.txt");
-    log_game(myfile, std::cout, e2.evaluator());
+    log_game(myfile, std::cout, e4.evaluator());
     myfile.close();
 }
 
