@@ -17,3 +17,9 @@ moves_t computeBest(
     std::vector<Brick> bricks,
     std::function<float(Board)> evaluation
 );
+
+moves_t computeBestParallel(
+    Board current,
+    std::vector<Brick> bricks,
+    std::function<float(Board)> evaluation
+);

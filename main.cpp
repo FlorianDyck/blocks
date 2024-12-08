@@ -45,7 +45,7 @@ struct Game{
 };
 
 template <typename ostream1, typename ostream2>
-void log_game(ostream1 &full_log, ostream2& partial_log, std::function<float(Board)> evaluation) {
+Game log_game(ostream1 &full_log, ostream2& partial_log, std::function<float(Board)> evaluation) {
     Game game;
     for(int i = 0; true; i++) {
         std::vector<Brick> bricks { 
@@ -55,7 +55,7 @@ void log_game(ostream1 &full_log, ostream2& partial_log, std::function<float(Boa
         };
         full_log << "\niteration " << i << " cleared rows: " << game.cleared << " available bricks: " << bricks[0] << bricks[1] << bricks[2] << "\n";
         partial_log << "\niteration " << i << " cleared rows: " << game.cleared;
-        moves_t moves = computeBest(game.board, bricks, evaluation);
+        moves_t moves = computeBestParallel(game.board, bricks, evaluation);
         if (moves.empty()) {
             break;
         }
@@ -66,6 +66,7 @@ void log_game(ostream1 &full_log, ostream2& partial_log, std::function<float(Boa
         game.board = moves.back().result;
         partial_log << game.board;
     };
+    return game;
 }
 
 int main()
@@ -80,9 +81,15 @@ int main()
     {
         logNum += 1;
     }
+
     std::ofstream myfile;
     myfile.open(std::format("logs/log{}.txt", logNum));
-    log_game(myfile, std::cout, e2.evaluator());
+    Game game = log_game(myfile, std::cout, e2.evaluator());
     myfile.close();
+
+    std::ofstream resultfile;
+    resultfile.open("logs/log.txt", std::ios_base::out | std::ios_base::app);
+    resultfile << std::format("logs/log{}.txt", logNum) << " score: " << game.cleared << std::endl;
+    resultfile.close();
 }
 

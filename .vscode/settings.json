@@ -69,7 +69,8 @@
         "stop_token": "cpp",
         "thread": "cpp",
         "variant": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "codecvt": "cpp"
     },
     "cmake.sourceDirectory": "/home/florian/blocks"
 }
