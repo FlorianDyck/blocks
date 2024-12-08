@@ -58,8 +58,7 @@ public:
 
     constexpr inline Grades grades();
 
-    /// @brief  flips along -
-    /// @return 
+    /// @brief  flips along - axis
     constexpr inline Board flipVertically()
     {
         return ((positions & 0xFF'00'00'00'00'00'00'00) >> Y7.value)
@@ -72,8 +71,7 @@ public:
              | ((positions & 0x00'00'00'00'00'00'00'FF) << Y7.value);
     }
 
-    /// @brief  flips along |
-    /// @return 
+    /// @brief  flips along | axis
     constexpr inline Board flipHorizontally()
     {
         return ((positions & 0x80'80'80'80'80'80'80'80) >> X7.value)
@@ -86,8 +84,7 @@ public:
              | ((positions & 0x01'01'01'01'01'01'01'01) << X7.value);
     }
 
-    /// @brief  flips along \\
-    /// @return 
+    /// @brief  flips along \\ axis
     constexpr inline Board flipDiagonally1()
     {
         return ((positions & 0x01'00'00'00'00'00'00'00) >> (Y7.value - X7.value))
@@ -107,8 +104,7 @@ public:
              | ((positions & 0x00'00'00'00'00'00'00'80) << (Y7.value - X7.value));
     }
 
-    /// @brief  flips along /
-    /// @return 
+    /// @brief  flips along / axis
     constexpr inline Board flipDiagonally2()
     {
         return ((positions & 0x80'00'00'00'00'00'00'00) >> (Y7.value + X7.value))

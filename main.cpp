@@ -71,7 +71,13 @@ Game log_game(ostream1 &full_log, ostream2& partial_log, std::function<float(Boa
 
 int main()
 {
-    EvaluatorPlacableParams e {4, {0, -1, -2, -5, -24}, {0, 0, 0, -1, -5}, 10, 5};
+    GradeParams gp {{3, 2, 1, -2, -21}, {0, 0, 0, -1, -5}};
+    PlacableParams pp {20, 10};
+    LineParams lp = LineParams{}
+        .addBitChangeCost([](int changes) { return -(changes * changes / 4); })
+        .addSetBitCost([](int setBits) { return -(setBits * (10 - setBits)) / 4; })
+        .addSetBitPositionCost([](int position) { return -(position * (8 - position)) / 4; })
+    ;
 
     int logNum = 1;
     while (std::filesystem::exists(std::format("logs/log{}.txt", logNum)))
@@ -81,7 +87,9 @@ int main()
 
     std::ofstream myfile;
     myfile.open(std::format("logs/log{}.txt", logNum));
-    Game game = log_game(myfile, std::cout, e.evaluator());
+    Game game = log_game(myfile, std::cout, [gp, pp, lp](Board b){
+        return gp.eval(b) + pp.eval(b) + lp.eval(b);
+    });
     myfile.close();
 
     std::ofstream resultfile;
