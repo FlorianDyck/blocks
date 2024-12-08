@@ -40,7 +40,7 @@ struct PlacableParams
 struct LineParams
 {
     int evaluations[256];
-    inline float evalRows(Board b) const {
+    inline float eval(Board b) const {
         int score = 0;
         Board f = b.flipDiagonally1();
         for (Y y: YS)
