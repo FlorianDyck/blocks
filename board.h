@@ -59,70 +59,13 @@ public:
     constexpr inline Grades grades();
 
     /// @brief  flips along - axis
-    constexpr inline Board flipVertically()
-    {
-        return ((positions & 0xFF'00'00'00'00'00'00'00) >> Y7.value)
-             | ((positions & 0x00'FF'00'00'00'00'00'00) >> Y5.value)
-             | ((positions & 0x00'00'FF'00'00'00'00'00) >> Y3.value)
-             | ((positions & 0x00'00'00'FF'00'00'00'00) >> Y1.value)
-             | ((positions & 0x00'00'00'00'FF'00'00'00) << Y1.value)
-             | ((positions & 0x00'00'00'00'00'FF'00'00) << Y3.value)
-             | ((positions & 0x00'00'00'00'00'00'FF'00) << Y5.value)
-             | ((positions & 0x00'00'00'00'00'00'00'FF) << Y7.value);
-    }
-
+    constexpr inline Board flipVertically();
     /// @brief  flips along | axis
-    constexpr inline Board flipHorizontally()
-    {
-        return ((positions & 0x80'80'80'80'80'80'80'80) >> X7.value)
-             | ((positions & 0x40'40'40'40'40'40'40'40) >> X5.value)
-             | ((positions & 0x20'20'20'20'20'20'20'20) >> X3.value)
-             | ((positions & 0x10'10'10'10'10'10'10'10) >> X1.value)
-             | ((positions & 0x08'08'08'08'08'08'08'08) << X1.value)
-             | ((positions & 0x04'04'04'04'04'04'04'04) << X3.value)
-             | ((positions & 0x02'02'02'02'02'02'02'02) << X5.value)
-             | ((positions & 0x01'01'01'01'01'01'01'01) << X7.value);
-    }
-
+    constexpr inline Board flipHorizontally();
     /// @brief  flips along \\ axis
-    constexpr inline Board flipDiagonally1()
-    {
-        return ((positions & 0x01'00'00'00'00'00'00'00) >> (Y7.value - X7.value))
-             | ((positions & 0x02'01'00'00'00'00'00'00) >> (Y6.value - X6.value))
-             | ((positions & 0x04'02'01'00'00'00'00'00) >> (Y5.value - X5.value))
-             | ((positions & 0x08'04'02'01'00'00'00'00) >> (Y4.value - X4.value))
-             | ((positions & 0x10'08'04'02'01'00'00'00) >> (Y3.value - X3.value))
-             | ((positions & 0x20'10'08'04'02'01'00'00) >> (Y2.value - X2.value))
-             | ((positions & 0x40'20'10'08'04'02'01'00) >> (Y1.value - X1.value))
-             | ((positions & 0x80'40'20'10'08'04'02'01))
-             | ((positions & 0x00'80'40'20'10'08'04'02) << (Y1.value - X1.value))
-             | ((positions & 0x00'00'80'40'20'10'08'04) << (Y2.value - X2.value))
-             | ((positions & 0x00'00'00'80'40'20'10'08) << (Y3.value - X3.value))
-             | ((positions & 0x00'00'00'00'80'40'20'10) << (Y4.value - X4.value))
-             | ((positions & 0x00'00'00'00'00'80'40'20) << (Y5.value - X5.value))
-             | ((positions & 0x00'00'00'00'00'00'80'40) << (Y6.value - X6.value))
-             | ((positions & 0x00'00'00'00'00'00'00'80) << (Y7.value - X7.value));
-    }
-
+    constexpr inline Board flipDiagonally1();
     /// @brief  flips along / axis
-    constexpr inline Board flipDiagonally2()
-    {
-        return ((positions & 0x80'00'00'00'00'00'00'00) >> (Y7.value + X7.value))
-             | ((positions & 0x40'80'00'00'00'00'00'00) >> (Y6.value + X6.value))
-             | ((positions & 0x20'40'80'00'00'00'00'00) >> (Y5.value + X5.value))
-             | ((positions & 0x10'20'40'80'00'00'00'00) >> (Y4.value + X4.value))
-             | ((positions & 0x08'10'20'40'80'00'00'00) >> (Y3.value + X3.value))
-             | ((positions & 0x04'08'10'20'40'80'00'00) >> (Y2.value + X2.value))
-             | ((positions & 0x02'04'08'10'20'40'80'00) >> (Y1.value + X1.value))
-             | ((positions & 0x01'02'04'08'10'20'40'80))
-             | ((positions & 0x00'01'02'04'08'10'20'40) << (Y1.value + X1.value))
-             | ((positions & 0x00'00'01'02'04'08'10'20) << (Y2.value + X2.value))
-             | ((positions & 0x00'00'00'01'02'04'08'10) << (Y3.value + X3.value))
-             | ((positions & 0x00'00'00'00'01'02'04'08) << (Y4.value + X4.value))
-             | ((positions & 0x00'00'00'00'00'01'02'04) << (Y5.value + X5.value))
-             | ((positions & 0x00'00'00'00'00'00'01'02) << (Y6.value + X6.value))
-             | ((positions & 0x00'00'00'00'00'00'00'01) << (Y7.value + X7.value));
-    }
+    constexpr inline Board flipDiagonally2();
 
     std::ostream &print_range(std::ostream &os, XY bound) const;
     std::ostream &print(std::ostream &os) const;
@@ -240,4 +183,70 @@ constexpr Y Board::hightest_position() const
         }
     }
     return -1;
+}
+
+/// @brief  flips along - axis
+constexpr inline Board Board::flipVertically()
+{
+    return ((positions & 0xFF'00'00'00'00'00'00'00) >> Y7.value)
+         | ((positions & 0x00'FF'00'00'00'00'00'00) >> Y5.value)
+         | ((positions & 0x00'00'FF'00'00'00'00'00) >> Y3.value)
+         | ((positions & 0x00'00'00'FF'00'00'00'00) >> Y1.value)
+         | ((positions & 0x00'00'00'00'FF'00'00'00) << Y1.value)
+         | ((positions & 0x00'00'00'00'00'FF'00'00) << Y3.value)
+         | ((positions & 0x00'00'00'00'00'00'FF'00) << Y5.value)
+         | ((positions & 0x00'00'00'00'00'00'00'FF) << Y7.value);
+}
+
+/// @brief  flips along | axis
+constexpr inline Board Board::flipHorizontally()
+{
+    return ((positions & 0x80'80'80'80'80'80'80'80) >> X7.value)
+         | ((positions & 0x40'40'40'40'40'40'40'40) >> X5.value)
+         | ((positions & 0x20'20'20'20'20'20'20'20) >> X3.value)
+         | ((positions & 0x10'10'10'10'10'10'10'10) >> X1.value)
+         | ((positions & 0x08'08'08'08'08'08'08'08) << X1.value)
+         | ((positions & 0x04'04'04'04'04'04'04'04) << X3.value)
+         | ((positions & 0x02'02'02'02'02'02'02'02) << X5.value)
+         | ((positions & 0x01'01'01'01'01'01'01'01) << X7.value);
+}
+
+/// @brief  flips along \\ axis
+constexpr inline Board Board::flipDiagonally1()
+{
+    return ((positions & 0x01'00'00'00'00'00'00'00) >> (Y7.value - X7.value))
+         | ((positions & 0x02'01'00'00'00'00'00'00) >> (Y6.value - X6.value))
+         | ((positions & 0x04'02'01'00'00'00'00'00) >> (Y5.value - X5.value))
+         | ((positions & 0x08'04'02'01'00'00'00'00) >> (Y4.value - X4.value))
+         | ((positions & 0x10'08'04'02'01'00'00'00) >> (Y3.value - X3.value))
+         | ((positions & 0x20'10'08'04'02'01'00'00) >> (Y2.value - X2.value))
+         | ((positions & 0x40'20'10'08'04'02'01'00) >> (Y1.value - X1.value))
+         | ((positions & 0x80'40'20'10'08'04'02'01))
+         | ((positions & 0x00'80'40'20'10'08'04'02) << (Y1.value - X1.value))
+         | ((positions & 0x00'00'80'40'20'10'08'04) << (Y2.value - X2.value))
+         | ((positions & 0x00'00'00'80'40'20'10'08) << (Y3.value - X3.value))
+         | ((positions & 0x00'00'00'00'80'40'20'10) << (Y4.value - X4.value))
+         | ((positions & 0x00'00'00'00'00'80'40'20) << (Y5.value - X5.value))
+         | ((positions & 0x00'00'00'00'00'00'80'40) << (Y6.value - X6.value))
+         | ((positions & 0x00'00'00'00'00'00'00'80) << (Y7.value - X7.value));
+}
+
+/// @brief  flips along / axis
+constexpr inline Board Board::flipDiagonally2()
+{
+    return ((positions & 0x80'00'00'00'00'00'00'00) >> (Y7.value + X7.value))
+         | ((positions & 0x40'80'00'00'00'00'00'00) >> (Y6.value + X6.value))
+         | ((positions & 0x20'40'80'00'00'00'00'00) >> (Y5.value + X5.value))
+         | ((positions & 0x10'20'40'80'00'00'00'00) >> (Y4.value + X4.value))
+         | ((positions & 0x08'10'20'40'80'00'00'00) >> (Y3.value + X3.value))
+         | ((positions & 0x04'08'10'20'40'80'00'00) >> (Y2.value + X2.value))
+         | ((positions & 0x02'04'08'10'20'40'80'00) >> (Y1.value + X1.value))
+         | ((positions & 0x01'02'04'08'10'20'40'80))
+         | ((positions & 0x00'01'02'04'08'10'20'40) << (Y1.value + X1.value))
+         | ((positions & 0x00'00'01'02'04'08'10'20) << (Y2.value + X2.value))
+         | ((positions & 0x00'00'00'01'02'04'08'10) << (Y3.value + X3.value))
+         | ((positions & 0x00'00'00'00'01'02'04'08) << (Y4.value + X4.value))
+         | ((positions & 0x00'00'00'00'00'01'02'04) << (Y5.value + X5.value))
+         | ((positions & 0x00'00'00'00'00'00'01'02) << (Y6.value + X6.value))
+         | ((positions & 0x00'00'00'00'00'00'00'01) << (Y7.value + X7.value));
 }
