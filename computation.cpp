@@ -3,13 +3,17 @@
 #include <future>
 #include "computation.h"
 
+struct evaluated_moves_t
+{
+    float evaluation = -INFINITY;
+    moves_t moves;
+};
 
 void computeBest(
     Board current,
     moves_t current_moves,
     std::vector<Brick> remaining_bricks,
-    float &best_evaluation,
-    moves_t &best_moves,
+    evaluated_moves_t &best_moves,
     std::function<float(Board)> evaluation
 )
 {
@@ -27,12 +31,12 @@ void computeBest(
 
             if (remaining_bricks.empty()) {
                 float new_score = evaluation(new_board);
-                if (new_score > best_evaluation) {
-                    best_evaluation = new_score;
-                    best_moves = current_moves;
+                if (new_score > best_moves.evaluation) {
+                    best_moves.evaluation = new_score;
+                    best_moves.moves = current_moves;
                 }
             } else {
-                computeBest(new_board, current_moves, remaining_bricks, best_evaluation, best_moves, evaluation);
+                computeBest(new_board, current_moves, remaining_bricks, best_moves, evaluation);
             }
 
             current_moves.pop_back();
@@ -50,8 +54,7 @@ moves_t computeBest(
     std::vector<Brick> bricks,
     std::function<float(Board)> evaluation
 ) {
-    float best_evaluation = -INFINITY;
-    moves_t best_moves;
-    computeBest(current, moves_t(), bricks, best_evaluation, best_moves, evaluation);
-    return best_moves;
+    evaluated_moves_t best_moves;
+    computeBest(current, moves_t(), bricks, best_moves, evaluation);
+    return best_moves.moves;
 }
