@@ -56,7 +56,6 @@ public:
         return BOARD_HEIGHT * BOARD_WIDTH - set_positions();
     }
 
-    constexpr inline int differentBlocksAround(const XY position) const;
     constexpr inline Grades grades();
 
     std::ostream &print_range(std::ostream &os, XY bound) const;
@@ -122,28 +121,27 @@ constexpr std::pair<Board, u8> Board::combine(const Board other) const {
     return std::pair(Board(combination), cleared);
 }
 
-constexpr inline int Board::differentBlocksAround(const XY position) const
+constexpr inline Grades Board::grades()
 {
-    int index = position.value;
-    bool isSet = positions & (1ul << index);
-    auto isDifferent = [this, index, position, isSet](int offset) { return isSet != (bool) (positions & (1ul << (index + offset))); };
-    int result = 0;
-    if ((index >= BOARD_WIDTH) ? isDifferent(-BOARD_WIDTH) : !isSet ) result++;
-    if (((index % BOARD_WIDTH) != 0) ? isDifferent(-1) : !isSet ) result++;
-    if (((index % BOARD_WIDTH) != (BOARD_WIDTH - 1)) ? isDifferent(1) : !isSet ) result++;
-    if ((index < (BOARD_HEIGHT * BOARD_WIDTH - BOARD_WIDTH)) ? isDifferent(BOARD_WIDTH) : !isSet ) result++;
-    return result;
-}
-
-constexpr inline Grades Board::grades() {
     Grades result;
+    u64 left = positions ^ ((positions << X1.value) | COLUMN.positions);
+    u64 right = positions ^ ((positions >> X1.value) | (COLUMN.positions << X7.value));
+    u64 bottom = positions ^ ((positions << Y1.value) | LINE.positions);
+    u64 top = positions ^ ((positions >> Y1.value) | (LINE.positions << Y7.value));
     for (XY xy: BOARD_XYS)
     {
-        if (position(xy)) 
+        int differentBlocksAround = 0;
+        u64 pos = ((u64) 0x1) << xy.value;
+        if (left & pos) differentBlocksAround++;
+        if (right & pos) differentBlocksAround++;
+        if (top & pos) differentBlocksAround++;
+        if (bottom & pos) differentBlocksAround++;
+
+        if (positions & pos) 
         {
-            result.used[differentBlocksAround(xy)]++;
+            result.used[differentBlocksAround]++;
         } else {
-            result.free[differentBlocksAround(xy)]++;
+            result.free[differentBlocksAround]++;
         }
     }
     return result;
