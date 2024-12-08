@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "bricks.h"
 
 struct FreeParams
@@ -38,13 +40,43 @@ struct PlacableParams
 struct LineParams
 {
     int evaluations[256];
-    inline float eval(Board b) const {
+    inline float evalRows(Board b) const {
         int score = 0;
         Board f = b.flipDiagonally1();
         for (Y y: YS)
         {
             score += evaluations[0xFF & (b.positions >> y.value)];
             score += evaluations[0xFF & (f.positions >> y.value)];
+        }
+        return score;
+    }
+    inline float evalIgnoring(Board b, int ignoreWorst) const
+    {
+        Board f = b.flipDiagonally1();
+        std::array<int, 16> scores
+        {
+            evaluations[0xFF & (b.positions >> Y0.value)],
+            evaluations[0xFF & (b.positions >> Y1.value)],
+            evaluations[0xFF & (b.positions >> Y2.value)],
+            evaluations[0xFF & (b.positions >> Y3.value)],
+            evaluations[0xFF & (b.positions >> Y4.value)],
+            evaluations[0xFF & (b.positions >> Y5.value)],
+            evaluations[0xFF & (b.positions >> Y6.value)],
+            evaluations[0xFF & (b.positions >> Y7.value)],
+            evaluations[0xFF & (f.positions >> Y0.value)],
+            evaluations[0xFF & (f.positions >> Y1.value)],
+            evaluations[0xFF & (f.positions >> Y2.value)],
+            evaluations[0xFF & (f.positions >> Y3.value)],
+            evaluations[0xFF & (f.positions >> Y4.value)],
+            evaluations[0xFF & (f.positions >> Y5.value)],
+            evaluations[0xFF & (f.positions >> Y6.value)],
+            evaluations[0xFF & (f.positions >> Y7.value)],
+        };
+        std::sort(scores.begin(), scores.end());
+        float score = 0;
+        for(int i = 0; i < 16 - ignoreWorst; ++i)
+        {
+            score += scores[i];
         }
         return score;
     }

@@ -88,7 +88,7 @@ int main()
     std::ofstream myfile;
     myfile.open(std::format("logs/log{}.txt", logNum));
     Game game = log_game(myfile, std::cout, [gp, pp, lp](Board b){
-        return gp.eval(b) + pp.eval(b) + lp.eval(b);
+        return gp.eval(b) + pp.eval(b) + lp.evalIgnoring(b, 4);
     });
     myfile.close();
 
