@@ -33,9 +33,9 @@ struct EvaluatorPlacableParams
         for (int i = 0; i < 5; i++) {
             score += grades.free[i] * freeGradeWeight[i] + grades.used[i] * usedGradeWeight[i];
         }
-        if (brick3x3.can_place(b)) score += place3x3Weight;
-        if (brick5x1.can_place(b)) score += place5x1Weight;
-        if (brick1x5.can_place(b)) score += place5x1Weight;
+        if (placable_positions_3X3(b)) score += place3x3Weight;
+        if (placable_positions_5X1(b)) score += place5x1Weight;
+        if (placable_positions_1X5(b)) score += place5x1Weight;
         return score;
     }
     inline auto evaluator() {
@@ -58,15 +58,15 @@ struct EvaluatorPlacableParams2
             score += grades.free[i] * freeGradeWeight[i] + grades.used[i] * usedGradeWeight[i];
         }
         {
-            u64 placablePositions = brick3x3.placable_positions(b);
+            u64 placablePositions = placable_positions_3X3(b);
             if (placablePositions) score += place3x3Weight + NumberOfSetBits(placablePositions);
         }
         {
-            u64 placablePositions = brick5x1.placable_positions(b);
+            u64 placablePositions = placable_positions_5X1(b);
             if (placablePositions) score += place5x1Weight + NumberOfSetBits(placablePositions);
         }
         {
-            u64 placablePositions = brick1x5.placable_positions(b);
+            u64 placablePositions = placable_positions_1X5(b);
             if (placablePositions) score += place5x1Weight + NumberOfSetBits(placablePositions);
         }
         return score;

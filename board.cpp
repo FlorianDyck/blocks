@@ -1,21 +1,6 @@
 #include<string.h>
 #include "board.h"
 
-Grades Board::grades() {
-    Grades result;
-    for (XY y: YS) {
-        for (XY x: XS) {
-            XY position = x + y;
-            if (positions & (1ul << position).positions) {
-                result.used[differentBlocksAround(position)]++;
-            } else {
-                result.free[differentBlocksAround(position)]++;
-            }
-        }
-    }
-    return result;
-}
-
 std::ostream &print_range_func(u64 positions, std::ostream &os, XY bound)
 {
     os << "\n|" << std::string(bound.x_int() + 1, '=') << "|\n|";

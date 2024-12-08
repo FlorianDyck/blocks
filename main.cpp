@@ -71,10 +71,7 @@ Game log_game(ostream1 &full_log, ostream2& partial_log, std::function<float(Boa
 
 int main()
 {
-    EvaluatorParams e1 {3, {0, -1, -3, -6, -24}, {0, 0, 0, -2, -10}};
-    EvaluatorParams e2 {3, {0, -1, -2, -5, -24}, {0, 0, 0, -1, -5}};
-    EvaluatorPlacableParams e3 {3, {0, -1, -2, -5, -24}, {0, 0, 0, -1, -5}, 10, 5};
-    EvaluatorPlacableParams2 e4 {3, {0, -1, -2, -5, -24}, {0, 0, 0, -1, -5}, 2, 1};
+    EvaluatorPlacableParams e {4, {0, -1, -2, -5, -24}, {0, 0, 0, -1, -5}, 10, 5};
 
     int logNum = 1;
     while (std::filesystem::exists(std::format("logs/log{}.txt", logNum)))
@@ -84,7 +81,7 @@ int main()
 
     std::ofstream myfile;
     myfile.open(std::format("logs/log{}.txt", logNum));
-    Game game = log_game(myfile, std::cout, e2.evaluator());
+    Game game = log_game(myfile, std::cout, e.evaluator());
     myfile.close();
 
     std::ofstream resultfile;

@@ -35,13 +35,12 @@ public:
     constexpr Board(Board&& other) = default;
     constexpr Board& operator=(const Board& other) = default;
 
-    constexpr bool operator==(const Board other) const { return positions == other.positions; }
+    constexpr inline bool operator==(const Board other) const { return positions == other.positions; }
 
-    constexpr Board operator|(const Board other) const { return positions | other.positions; }
+    constexpr inline Board operator|(const Board other) const { return positions | other.positions; }
 
-    constexpr bool operator[](XY xy) const { return (positions >> xy.value) & 1; }
-
-    constexpr bool position(XY xy) const;
+    constexpr inline bool position(XY xy) const { return (positions >> xy.value) & 0x1; }
+    constexpr inline bool operator[](XY xy) const { return position(xy); }
 
     constexpr X rightmost_position() const;
     constexpr Y hightest_position() const;
@@ -57,9 +56,8 @@ public:
         return BOARD_HEIGHT * BOARD_WIDTH - set_positions();
     }
 
-    constexpr int differentBlocksAround(const XY position) const;
-
-    Grades grades();
+    constexpr inline int differentBlocksAround(const XY position) const;
+    constexpr inline Grades grades();
 
     std::ostream &print_range(std::ostream &os, XY bound) const;
     std::ostream &print(std::ostream &os) const;
@@ -124,12 +122,7 @@ constexpr std::pair<Board, u8> Board::combine(const Board other) const {
     return std::pair(Board(combination), cleared);
 }
 
-constexpr bool Board::position(XY xy) const
-{
-    return (positions >> xy.value) & 0x1;
-}
-
-constexpr int Board::differentBlocksAround(const XY position) const
+constexpr inline int Board::differentBlocksAround(const XY position) const
 {
     int index = position.value;
     bool isSet = positions & (1ul << index);
@@ -139,6 +132,20 @@ constexpr int Board::differentBlocksAround(const XY position) const
     if (((index % BOARD_WIDTH) != 0) ? isDifferent(-1) : !isSet ) result++;
     if (((index % BOARD_WIDTH) != (BOARD_WIDTH - 1)) ? isDifferent(1) : !isSet ) result++;
     if ((index < (BOARD_HEIGHT * BOARD_WIDTH - BOARD_WIDTH)) ? isDifferent(BOARD_WIDTH) : !isSet ) result++;
+    return result;
+}
+
+constexpr inline Grades Board::grades() {
+    Grades result;
+    for (XY xy: BOARD_XYS)
+    {
+        if (position(xy)) 
+        {
+            result.used[differentBlocksAround(xy)]++;
+        } else {
+            result.free[differentBlocksAround(xy)]++;
+        }
+    }
     return result;
 }
 
