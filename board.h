@@ -17,12 +17,19 @@ struct Grades
 
 using u64 = uint_fast64_t;
 
+#if defined(__GNUC__) | defined(__clang__)
+constexpr static int NumberOfSetBits(u64 i)
+{
+    return __builtin_popcountll(i);
+}
+#else
 constexpr static int NumberOfSetBits(u64 i)
 {
     i = i - ((i >> 1) & 0x5555555555555555UL);
     i = (i & 0x3333333333333333UL) + ((i >> 2) & 0x3333333333333333UL);
     return (int)((((i + (i >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >> 56);
 }
+#endif
 
 class Board
 {
@@ -107,25 +114,38 @@ inline constexpr const Board toBoard(XY xy)
 constexpr std::pair<Board, u8> Board::combine(const Board other) const {
     assert(can_combine(other));
     u64 combination = positions | other.positions;
-    u8 cleared;
     
-    u64 lines = 0;
-    for (Y y: YS) {
-        if ((combination & (LINE << y).positions) == (LINE << y)) {
-            lines |= toBoard(y).positions;
-            cleared += 1;
-        }
-    }
-    
-    u64 columns = 0;
-    for (XY x: XS) {
-        if ((combination & (COLUMN << x).positions) == (COLUMN << x)) {
-            columns |= toBoard(x).positions;
-            cleared += 1;
-        }
-    }
+    u64 columns = combination;
+    columns = columns & (columns >> Y1.value); // where 2 consecutive positions are set
+    columns = columns & (columns >> Y2.value); // where 4 consecutive positions are set
+    columns = columns & (columns >> Y4.value)  // where 8 consecutive positions are set
+                & LINE.positions;              // keep only those corresponding to columns
 
-    combination &= ~((lines * LINE.positions) | (columns * COLUMN.positions));
+#if defined(__GNUC__) | defined(__clang__)
+    u8 cleared = __builtin_popcount(columns);  // count set bits int a 32 bit number (since only the last 8 can be set)
+#else
+    u8 cleared = columns;                                         // compute the number of set bits
+    cleared = cleared - ((cleared >> 1) & (u8)0x55);              // 2 bits count the number of set bits from before
+    cleared = (cleared & (u8)0x33) + ((cleared >> 2) & (u8)0x33); // sum for 4 bit groups
+    cleared = (cleared + (cleared >> 4)) & 0x0F;                  // sum for 8 bit group
+#endif
+
+    u64 lines = combination;
+    lines = lines & (lines >> X1.value); // where 2 consecutive positions are set
+    lines = lines & (lines >> X2.value); // where 4 consecutive positions are set
+    lines = lines & (lines >> X4.value)  // where 8 consecutive positions are set
+                & COLUMN.positions;      // keep only those corresponding to lines
+
+#if defined(__GNUC__) | defined(__clang__)
+    cleared += __builtin_popcountll(columns);  // count set bits in a 64 bit number
+#else
+    cleared += (u8)((lines * 0x101010101010101UL) >> 56); //this is the number of set bits, because only the bits from COLUMN can be set
+#endif
+
+    u64 clearedLinesPositions   = lines   * LINE.positions;
+    u64 clearedColumnsPositions = columns * COLUMN.positions;
+    u64 clearedRowsPositions    = clearedLinesPositions | clearedColumnsPositions;
+    combination &= ~clearedRowsPositions;
 
     return std::pair(Board(combination), cleared);
 }
