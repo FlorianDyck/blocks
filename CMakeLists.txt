@@ -10,7 +10,7 @@ endif()
 
 set(CMAKE_CXX_FLAGS "-fopenmp -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3" -march=native)
 
 include(FetchContent)
 FetchContent_Declare(
