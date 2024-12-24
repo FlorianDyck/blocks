@@ -152,7 +152,10 @@ constexpr std::pair<Board, u8> Board::combine(const Board other) const {
 
 constexpr inline Grades Board::grades()
 {
-    int result[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    // there are 10 numbers from 0 to 63 which are stored every 6 bits
+    // this is used over an array because it can be stored in a register
+    // and is not forcibly in memory (as access into an array would require)
+    u64 result = 0;
     
     u64 left = positions ^ ((positions << X1.value) | COLUMN.positions);
     u64 right = positions ^ ((positions >> X1.value) | (COLUMN.positions << X7.value));
@@ -189,12 +192,24 @@ constexpr inline Grades Board::grades()
 #endif
         for(int offset = 0; offset < 64; offset += 4) 
         {
-            result[(numbersOfSetBitsPart >> offset) & 0xF]++;
+            result += 1UL << (6 * ((numbersOfSetBitsPart >> offset) & 0xF));
         }
     }
     return Grades {
-        {result[0], result[1], result[2], result[3], result[4]}, // free
-        {result[5], result[6], result[7], result[8], result[9]}, // used
+        { // free
+            ((int)( result       )) & 0x3F,
+            ((int)((result) >>  6)) & 0x3F,
+            ((int)((result) >> 12)) & 0x3F,
+            ((int)((result) >> 18)) & 0x3F,
+            ((int)((result) >> 24)) & 0x3F,
+        }, 
+        { // used
+            ((int)((result) >> 30)) & 0x3F,
+            ((int)((result) >> 36)) & 0x3F,
+            ((int)((result) >> 42)) & 0x3F,
+            ((int)((result) >> 48)) & 0x3F,
+            ((int)((result) >> 54)) & 0x3F,
+        },
     };
 }
 
