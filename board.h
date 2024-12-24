@@ -152,28 +152,50 @@ constexpr std::pair<Board, u8> Board::combine(const Board other) const {
 
 constexpr inline Grades Board::grades()
 {
-    Grades result;
+    int result[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    
     u64 left = positions ^ ((positions << X1.value) | COLUMN.positions);
     u64 right = positions ^ ((positions >> X1.value) | (COLUMN.positions << X7.value));
     u64 bottom = positions ^ ((positions << Y1.value) | LINE.positions);
     u64 top = positions ^ ((positions >> Y1.value) | (LINE.positions << Y7.value));
-    for (XY xy: BOARD_XYS)
-    {
-        int differentBlocksAround = 0;
-        u64 pos = ((u64) 0x1) << xy.value;
-        if (left & pos) differentBlocksAround++;
-        if (right & pos) differentBlocksAround++;
-        if (top & pos) differentBlocksAround++;
-        if (bottom & pos) differentBlocksAround++;
 
-        if (positions & pos) 
+    const u64 ALTERNATING_BITS = 0x55'55'55'55'55'55'55'55LL;
+    // number of set bits in 2-bit groups among left, right and bottom
+    u64 sum3[2] = {
+        ((left >> 1) & ALTERNATING_BITS) + ((right >> 1) & ALTERNATING_BITS) + ((bottom >> 1) & ALTERNATING_BITS),
+        ( left       & ALTERNATING_BITS) + ( right       & ALTERNATING_BITS) + ( bottom       & ALTERNATING_BITS),
+    };
+    const u64 ALTERNATING_BITS2 = 0x33'33'33'33'33'33'33'33LL;
+    const u64 EVERY_FOURTH_BIT = 0x11'11'11'11'11'11'11'11LL;
+    // number of set bits in 4-bit groups among left, right, bottom and top,
+    // additionally increased by 5 if the position is set (to switch between used and free)
+    u64 numbersOfSetBits[4] = {
+        ((sum3[0] >> 2) & ALTERNATING_BITS2) + ((top >> 3) & EVERY_FOURTH_BIT) + 5 * ((positions >> 3) & EVERY_FOURTH_BIT),
+        ( sum3[0]       & ALTERNATING_BITS2) + ((top >> 2) & EVERY_FOURTH_BIT) + 5 * ((positions >> 2) & EVERY_FOURTH_BIT),
+        ((sum3[1] >> 2) & ALTERNATING_BITS2) + ((top >> 1) & EVERY_FOURTH_BIT) + 5 * ((positions >> 1) & EVERY_FOURTH_BIT),
+        ( sum3[1]       & ALTERNATING_BITS2) + ( top       & EVERY_FOURTH_BIT) + 5 * ( positions       & EVERY_FOURTH_BIT),
+    };
+// #if defined(__GNUC__)
+//     #pragma GCC unroll 4
+// #elif defined(__clang__)
+//     #pragma unroll
+// #endif
+    for(u64 numbersOfSetBitsPart: numbersOfSetBits)
+    {
+#if defined(__GNUC__)
+        #pragma GCC unroll 16
+#elif defined(__clang__)
+        #pragma unroll
+#endif
+        for(int offset = 0; offset < 64; offset += 4) 
         {
-            result.used[differentBlocksAround]++;
-        } else {
-            result.free[differentBlocksAround]++;
+            result[(numbersOfSetBitsPart >> offset) & 0xF]++;
         }
     }
-    return result;
+    return Grades {
+        {result[0], result[1], result[2], result[3], result[4]}, // free
+        {result[5], result[6], result[7], result[8], result[9]}, // used
+    };
 }
 
 inline constexpr const Board operator|(const XY lhs, const XY rhs)
