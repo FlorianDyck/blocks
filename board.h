@@ -174,8 +174,8 @@ constexpr inline Grades Board::grades()
     // additionally increased by 5 if the position is set (to switch between used and free)
     u64 numbersOfSetBits[4] = {
         ((sum3[0] >> 2) & ALTERNATING_BITS2) + ((top >> 3) & EVERY_FOURTH_BIT) + 5 * ((positions >> 3) & EVERY_FOURTH_BIT),
-        ( sum3[0]       & ALTERNATING_BITS2) + ((top >> 2) & EVERY_FOURTH_BIT) + 5 * ((positions >> 2) & EVERY_FOURTH_BIT),
-        ((sum3[1] >> 2) & ALTERNATING_BITS2) + ((top >> 1) & EVERY_FOURTH_BIT) + 5 * ((positions >> 1) & EVERY_FOURTH_BIT),
+        ((sum3[1] >> 2) & ALTERNATING_BITS2) + ((top >> 2) & EVERY_FOURTH_BIT) + 5 * ((positions >> 2) & EVERY_FOURTH_BIT),
+        ( sum3[0]       & ALTERNATING_BITS2) + ((top >> 1) & EVERY_FOURTH_BIT) + 5 * ((positions >> 1) & EVERY_FOURTH_BIT),
         ( sum3[1]       & ALTERNATING_BITS2) + ( top       & EVERY_FOURTH_BIT) + 5 * ( positions       & EVERY_FOURTH_BIT),
     };
 // #if defined(__GNUC__)
