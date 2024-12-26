@@ -17,19 +17,16 @@ struct Grades
 
 using u64 = uint_fast64_t;
 
+constexpr static int NumberOfSetBits(u64 i)
+{
 #if defined(__GNUC__) | defined(__clang__)
-constexpr static int NumberOfSetBits(u64 i)
-{
     return __builtin_popcountll(i);
-}
 #else
-constexpr static int NumberOfSetBits(u64 i)
-{
     i = i - ((i >> 1) & 0x5555555555555555UL);
     i = (i & 0x3333333333333333UL) + ((i >> 2) & 0x3333333333333333UL);
     return (int)((((i + (i >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >> 56);
-}
 #endif
+}
 
 class Board
 {
@@ -152,63 +149,38 @@ constexpr std::pair<Board, u8> Board::combine(const Board other) const {
 
 constexpr inline Grades Board::grades()
 {
-    // there are 10 numbers from 0 to 63 which are stored every 6 bits
-    // this is used over an array because it can be stored in a register
-    // and is not forcibly in memory (as access into an array would require)
-    u64 result = 0;
-    
     u64 left = positions ^ ((positions << X1.value) | COLUMN.positions);
     u64 right = positions ^ ((positions >> X1.value) | (COLUMN.positions << X7.value));
     u64 bottom = positions ^ ((positions << Y1.value) | LINE.positions);
     u64 top = positions ^ ((positions >> Y1.value) | (LINE.positions << Y7.value));
 
-    const u64 ALTERNATING_BITS = 0x55'55'55'55'55'55'55'55LL;
-    // number of set bits in 2-bit groups among left, right and bottom
-    u64 sum3[2] = {
-        ((left >> 1) & ALTERNATING_BITS) + ((right >> 1) & ALTERNATING_BITS) + ((bottom >> 1) & ALTERNATING_BITS),
-        ( left       & ALTERNATING_BITS) + ( right       & ALTERNATING_BITS) + ( bottom       & ALTERNATING_BITS),
-    };
-    const u64 ALTERNATING_BITS2 = 0x33'33'33'33'33'33'33'33LL;
-    const u64 EVERY_FOURTH_BIT = 0x11'11'11'11'11'11'11'11LL;
-    // number of set bits in 4-bit groups among left, right, bottom and top,
-    // additionally increased by 5 if the position is set (to switch between used and free)
-    u64 numbersOfSetBits[4] = {
-        ((sum3[0] >> 2) & ALTERNATING_BITS2) + ((top >> 3) & EVERY_FOURTH_BIT) + 5 * ((positions >> 3) & EVERY_FOURTH_BIT),
-        ((sum3[1] >> 2) & ALTERNATING_BITS2) + ((top >> 2) & EVERY_FOURTH_BIT) + 5 * ((positions >> 2) & EVERY_FOURTH_BIT),
-        ( sum3[0]       & ALTERNATING_BITS2) + ((top >> 1) & EVERY_FOURTH_BIT) + 5 * ((positions >> 1) & EVERY_FOURTH_BIT),
-        ( sum3[1]       & ALTERNATING_BITS2) + ( top       & EVERY_FOURTH_BIT) + 5 * ( positions       & EVERY_FOURTH_BIT),
-    };
-// #if defined(__GNUC__)
-//     #pragma GCC unroll 4
-// #elif defined(__clang__)
-//     #pragma unroll
-// #endif
-    for(u64 numbersOfSetBitsPart: numbersOfSetBits)
-    {
-#if defined(__GNUC__)
-        #pragma GCC unroll 16
-#elif defined(__clang__)
-        #pragma unroll
-#endif
-        for(int offset = 0; offset < 64; offset += 4) 
-        {
-            result += 1UL << (6 * ((numbersOfSetBitsPart >> offset) & 0xF));
-        }
-    }
+    // summing up how many directions are differing in b3,b2,b1 as 3-bit number
+    u64 i1 = left, i2 = right, i3 = bottom, i4 = top;
+    u64 b3 = i1 & i2 & i3 & i4;
+    u64 b2 = ~b3 & ((i1 & (i2 | i3 | i4)) | (i2 & (i3 | i4)) | (i3 & i4));
+    u64 b1 = i1 ^ i2 ^ i3 ^ i4;
+
+    // storing how many bits are set into different variables
+    u64 diff4 = b3;
+    u64 diff3 = b2 & b1;
+    u64 diff2 = b2 & ~b1;
+    u64 diff1 = ~b2 & b1;
+    u64 diff0 = ~b3 & ~b2 & ~b1;
+
     return Grades {
         { // free
-            ((int)( result       )) & 0x3F,
-            ((int)((result) >>  6)) & 0x3F,
-            ((int)((result) >> 12)) & 0x3F,
-            ((int)((result) >> 18)) & 0x3F,
-            ((int)((result) >> 24)) & 0x3F,
+            NumberOfSetBits(diff0 & ~positions),
+            NumberOfSetBits(diff1 & ~positions),
+            NumberOfSetBits(diff2 & ~positions),
+            NumberOfSetBits(diff3 & ~positions),
+            NumberOfSetBits(diff4 & ~positions),
         }, 
         { // used
-            ((int)((result) >> 30)) & 0x3F,
-            ((int)((result) >> 36)) & 0x3F,
-            ((int)((result) >> 42)) & 0x3F,
-            ((int)((result) >> 48)) & 0x3F,
-            ((int)((result) >> 54)) & 0x3F,
+            NumberOfSetBits(diff0 & positions),
+            NumberOfSetBits(diff1 & positions),
+            NumberOfSetBits(diff2 & positions),
+            NumberOfSetBits(diff3 & positions),
+            NumberOfSetBits(diff4 & positions),
         },
     };
 }
