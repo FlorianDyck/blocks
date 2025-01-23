@@ -51,7 +51,7 @@ public:
 
     constexpr inline bool can_combine(const Board other) const { return !(positions & other.positions); }
 
-    constexpr std::pair<Board, u8> combine(Board other) const;
+    constexpr inline std::pair<Board, u8> combine(Board other) const;
 
     constexpr int set_positions() const { return NumberOfSetBits(positions); }
 
@@ -108,7 +108,7 @@ inline constexpr const Board toBoard(XY xy)
     return ((u64)1) << xy.value;
 };
 
-constexpr std::pair<Board, u8> Board::combine(const Board other) const {
+constexpr inline std::pair<Board, u8> Board::combine(const Board other) const {
     assert(can_combine(other));
     u64 combination = positions | other.positions;
     
