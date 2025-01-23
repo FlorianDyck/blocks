@@ -40,7 +40,7 @@ float eval1(Board b) {
 }
 
 struct Game{
-    Board board;
+    Board board {0};
     size_t cleared {0};
 };
 

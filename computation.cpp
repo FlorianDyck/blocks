@@ -11,8 +11,8 @@ struct evaluated_moves_t
 
 void computeBest(
     Board current,
-    moves_t current_moves,
-    std::vector<Brick> remaining_bricks,
+    moves_t &current_moves,
+    std::vector<Brick> &remaining_bricks,
     evaluated_moves_t &best_moves,
     std::function<float(Board)> evaluation
 )
@@ -54,7 +54,10 @@ moves_t computeBest(
     std::function<float(Board)> evaluation
 ) {
     evaluated_moves_t best_moves;
-    computeBest(current, moves_t(), bricks, best_moves, evaluation);
+    best_moves.moves.reserve(bricks.size());
+    moves_t moves {};
+    moves.reserve(bricks.size());
+    computeBest(current, moves, bricks, best_moves, evaluation);
     return best_moves.moves;
 }
 

@@ -48,7 +48,7 @@ public:
     Brick flip_vertically();
     Brick flip_horizontally();
     Brick rotate();
-    Board operator<<(XY pos) { return board.positions << pos; }
+    Board inline operator<<(XY pos) { return board.positions << pos; }
 
     std::ostream &print(std::ostream &os) const;
     friend std::ostream &operator<<(std::ostream &os, const Brick &m) { return m.print(os); }

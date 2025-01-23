@@ -17,7 +17,7 @@ struct Grades
 
 using u64 = uint_fast64_t;
 
-constexpr static int NumberOfSetBits(u64 i)
+constexpr inline static int NumberOfSetBits(u64 i)
 {
 #if defined(__GNUC__) | defined(__clang__)
     return __builtin_popcountll(i);
@@ -33,11 +33,11 @@ class Board
 public:
     u64 positions;
 
-    constexpr Board() = default;
-    constexpr Board(u64 positions) : positions(positions) {}
-    constexpr Board(const Board& other) = default;
-    constexpr Board(Board&& other) = default;
-    constexpr Board& operator=(const Board& other) = default;
+    constexpr inline Board() = default;
+    constexpr inline Board(u64 positions) : positions(positions) {}
+    constexpr inline Board(const Board& other) = default;
+    constexpr inline Board(Board&& other) = default;
+    constexpr inline Board& operator=(const Board& other) = default;
 
     constexpr inline bool operator==(const Board other) const { return positions == other.positions; }
 
@@ -49,7 +49,7 @@ public:
     constexpr X rightmost_position() const;
     constexpr Y hightest_position() const;
 
-    constexpr bool can_combine(const Board other) const { return !(positions & other.positions); }
+    constexpr inline bool can_combine(const Board other) const { return !(positions & other.positions); }
 
     constexpr std::pair<Board, u8> combine(Board other) const;
 
@@ -84,14 +84,14 @@ public:
     friend std::ostream &operator<<(std::ostream &os, Board const &m) { return m.print(os); }
 };
 
-constexpr const Board operator<<(const Board blocks, const XY xy)
+constexpr inline const Board operator<<(const Board blocks, const XY xy)
 {
     assert(xy.valid());
     return blocks.positions << xy.value;
 }
 
-constexpr const Board LINE {0b11111111};
-constexpr const Board COLUMN {0x0101010101010101};
+constexpr inline const Board LINE {0b11111111};
+constexpr inline const Board COLUMN {0x0101010101010101};
 
 #define L(index) LINE << Y(index)
 constexpr const Board LINES[] = {L(0), L(1), L(2), L(3), L(4), L(5), L(6), L(7)};
